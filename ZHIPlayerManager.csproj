@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="MySql.Data">
+      <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件5.0\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="OTAPI">
+      <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件5.0\OTAPI.dll</HintPath>
+    </Reference>
+    <Reference Include="TerrariaServer">
+      <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件5.0\TerrariaServer.dll</HintPath>
+    </Reference>
+    <Reference Include="TShockAPI">
+      <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件5.0\TShockAPI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

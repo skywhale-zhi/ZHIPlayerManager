@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33103.184
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZHIPlayerManager", "ZHIPlayerManager.csproj", "{B18A0283-AD37-45B0-A563-58EA4AC6E205}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B18A0283-AD37-45B0-A563-58EA4AC6E205}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B18A0283-AD37-45B0-A563-58EA4AC6E205}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B18A0283-AD37-45B0-A563-58EA4AC6E205}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B18A0283-AD37-45B0-A563-58EA4AC6E205}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E8AE1764-CD36-4B0C-BDF8-DB8E4E20CE40}
+	EndGlobalSection
+EndGlobal
