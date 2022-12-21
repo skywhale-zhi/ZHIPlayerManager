@@ -14,7 +14,7 @@ namespace ZHIPlayerManager
 
         public override string Name => "ZHIPlayerManager";
 
-        public override Version Version => new Version(1, 0, 0, 0);
+        public override Version Version => new Version(1, 0, 0, 1);
 
         //人物备份数据库
         public ZplayerDB ZPDataBase;
