@@ -40,8 +40,8 @@ namespace ZHIPlayerManager
         /// </summary>
         public static long Timer
         {
-            get { return Timer; }
-            private set { Timer = value; }
+            get;
+            private set;
         }
         /// <summary>
         /// 清理数据的计时器
