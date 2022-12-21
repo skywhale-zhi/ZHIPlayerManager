@@ -2521,7 +2521,7 @@ namespace ZHIPlayerManager
                 string temp1 = config.是否启用在线时长统计 ? ("输入 /zsort time  来查看人物在线时间排行榜前十名\n" +
                                                             "输入 /zsort time [num]  来查看当前[num]个人物在线时间排行榜\n" +
                                                             "输入 /zsort time all  来查看所有玩家在线时常排行榜\n") : "";
-                string temp2 = config.是否启用击杀NPC统计 ? ("输入 /zsort kill [num]  来查看当前[num]个人物击杀生物数排行榜\n" +
+                string temp2 = config.是否启用击杀NPC统计 ? ("\n输入 /zsort kill [num]  来查看当前[num]个人物击杀生物数排行榜\n" +
                                                            "输入 /zsort kill  来查看人物击杀生物数排行榜前十名\n" +
                                                            "输入 /zsort kill all  来查看所有玩家击杀生物数排行榜\n" +
                                                            "输入 /zsort boss [num]  来查看当前[num]个人物击杀Boss总数排行榜\n" +
@@ -2529,28 +2529,28 @@ namespace ZHIPlayerManager
                                                            "输入 /zsort boss all  来查看所有玩家击杀Boss总数排行榜\n" +
                                                            "输入 /zsort rarenpc [num]  来查看当前[num]个人物击杀罕见生物总数排行榜\n" +
                                                            "输入 /zsort rarenpc  来查看人物击杀罕见生物总数排行榜前十名\n" +
-                                                           "输入 /zsort rarenpc all  来查看所有玩家击杀罕见生物总数排行榜\n") : "";
-                string temp3 = config.是否启用点数统计 ? ("输入 /zsort point [num]  来查看当前[num]个人物点数排行榜\n" +
+                                                           "输入 /zsort rarenpc all  来查看所有玩家击杀罕见生物总数排行榜") : "";
+                string temp3 = config.是否启用点数统计 ? ("\n输入 /zsort point [num]  来查看当前[num]个人物点数排行榜\n" +
                                                         "输入 /zsort point  来查看人物点数排行榜前十名\n" +
-                                                        "输入 /zsort point all  来查看所有玩家点数排行榜\n") : "";
-                string temp4 = config.是否启用死亡次数统计 ? ("输入 /zsort death [num]  来查看当前[num]个人物死亡次数排行榜\n" +
+                                                        "输入 /zsort point all  来查看所有玩家点数排行榜") : "";
+                string temp4 = config.是否启用死亡次数统计 ? ("\n输入 /zsort death [num]  来查看当前[num]个人物死亡次数排行榜\n" +
                                                         "输入 /zsort death  来查看人物死亡次数排行榜前十名\n" +
-                                                        "输入 /zsort death all  来查看所有玩家死亡次数排行榜\n") : "";
+                                                        "输入 /zsort death all  来查看所有玩家死亡次数排行榜") : "";
                 string temp5 = config.是否启用死亡次数统计 && config.是否启用在线时长统计 ? 
-                                                       ("输入 /zsort clumsy  来查看人物手残排行榜前十名\n" +
+                                                       ("\n输入 /zsort clumsy  来查看人物手残排行榜前十名\n" +
                                                         "输入 /zsort clumsy [num]  来查看当前[num]个人物手残排行榜\n" +
-                                                        "输入 /zsort clumsy all  来查看所有玩家手残排行榜\n") : "";
+                                                        "输入 /zsort clumsy all  来查看所有玩家手残排行榜") : "";
 
-                args.Player.SendInfoMessage(
+                args.Player.SendMessage(
                     temp1 +
                     "输入 /zsort coin  来查看人物硬币数目排行榜前十名\n" +
                     "输入 /zsort coin [num]  来查看当前[num]个人物硬币数目排行榜\n" +
                     "输入 /zsort coin all  来查看所有玩家硬币数目排行榜\n" +
                     "输入 /zsort fish  来查看人物任务鱼数目排行榜前十名\n" +
                     "输入 /zsort fish [num]  来查看当前[num]个人物任务鱼数目排行榜\n" +
-                    "输入 /zsort fish all  来查看所有玩家任务鱼数目排行榜\n" +
+                    "输入 /zsort fish all  来查看所有玩家任务鱼数目排行榜" +
                     temp4 + temp2 + temp3 + temp5
-                    );
+                    , TextColor());
                 return;
             }
             //时间排序
@@ -4136,7 +4136,7 @@ namespace ZHIPlayerManager
 
 
         /// <summary>
-        /// 记录死亡次数
+        /// 重置死亡状态
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>

@@ -1002,12 +1002,7 @@ namespace ZHIPlayerManager
             {
                 sb.Append("无");
             }
-            string ss = sb.ToString();
-            while(ss.Last() == '\n' || ss.Last() == '，' || ss.Last() == ' ')
-            {
-                ss = ss.Trim('，', '\n', ' ');
-            }
-            return ss;
+            return sb.ToString().Trim('，');
         }
 
 
@@ -1597,9 +1592,12 @@ namespace ZHIPlayerManager
                     List<Item> items = new List<Item>();
                     for (int i = 0; i < pd.inventory.Length; i++)
                     {
-                        items.Add(TShock.Utils.GetItemById(pd.inventory[i].NetId));
-                        items[i].stack = pd.inventory[i].Stack;
-                        items[i].prefix = pd.inventory[i].PrefixId;
+                        if (pd.inventory[i].NetId == 71 || pd.inventory[i].NetId == 72 || pd.inventory[i].NetId == 73 || pd.inventory[i].NetId == 74)
+                        {
+                            items.Add(TShock.Utils.GetItemById(pd.inventory[i].NetId));
+                            items[i].stack = pd.inventory[i].Stack;
+                            items[i].prefix = pd.inventory[i].PrefixId;
+                        }
                     }
                     return Terraria.Utils.CoinsCount(out bool flag, items.ToArray(), new int[0]);
                 }
@@ -1691,19 +1689,19 @@ namespace ZHIPlayerManager
 
             sb.AppendLine($"共有 [c/74F3C9:{playerAndDamage.Count}] 位玩家击败了 [c/74F3C9:{BossName}]");
 
-            while(playerAndDamage.Count > 0)
+            while (playerAndDamage.Count > 0)
             {
                 int key = 0;
                 int damage = 0;
-                foreach(var v in playerAndDamage)
+                foreach (var v in playerAndDamage)
                 {
-                    if(v.Value > damage)
+                    if (v.Value > damage)
                     {
                         key = v.Key;
                         damage = v.Value;
                     }
                 }
-                if(key != 0)
+                if (key != 0)
                 {
                     sortpairs.Add(key, damage);
                     playerAndDamage.Remove(key);
