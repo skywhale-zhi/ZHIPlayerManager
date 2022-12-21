@@ -88,21 +88,33 @@
 - 指令5-17： `/zmodify [name] enhance [0或1]`
 - 功能5-17： 关闭或开启玩家的或所有增益
 -
+- 权限6： `zhipm.freeze`
+- 指令6-1： `/zfre [name]`
+- 功能6-1： 冻结这个玩家，从 name,uuid,ip 三个数据进行比对冻结
+- 指令6-2： `/zunfre [name]`
+- 功能6-2： 解冻这个玩家
+- 指令6-3： `/zunfre all`
+- 功能6-3： 解冻所有玩家
+-
 - 权限7： `zhipm.reset`
-- 指令7-1： `/zresetdb [name]`
-- 功能7-1： 重置这个玩家的备份数据，删除备份数据库中的数据
-- 指令7-2： `/zresetdb all`
-- 功能7-2： 重置所有玩家的备份数据
-- 指令7-3： `/zresetex [name]`
-- 功能7-3： 重置这个玩家的额外数据，删除额外数据库中的数据
-- 指令7-4： `/zresetex all`
-- 功能7-4： 重置所有玩家的额外数据
-- 指令7-5： `/zreset [name]`
-- 功能7-5： 重置这个玩家的人物数据，按照 tshock 的 ssconfig.json 的配置进行重置
-- 指令7-6： `/zreset all`
-- 功能7-6： 重置所有玩家的人物数据，按照 tshock 的 ssconfig.json 的配置进行重置
-- 指令7-7： `/zresetallplayers`
-- 功能7-7： 重置所有玩家的所有数据，适合新开荒时使用， **这个指令会删掉原版 tsCharacter 表和插件 Zhipm_PlayerBackUp 和 Zhipm_PlayerExtra 表中的所有数据！** 
+- 指令7-1： `/zresetbuff [name]`
+- 功能7-1： 重置这个玩家所有Buff
+- 指令7-2： `/zresetbuff all`
+- 功能7-2： 重置所有玩家的所有Buff
+- 指令7-3： `/zresetdb [name]`
+- 功能7-3： 重置这个玩家的备份数据，删除备份数据库中的数据
+- 指令7-4： `/zresetdb all`
+- 功能7-4： 重置所有玩家的备份数据
+- 指令7-5： `/zresetex [name]`
+- 功能7-5： 重置这个玩家的额外数据，删除额外数据库中的数据
+- 指令7-6： `/zresetex all`
+- 功能7-6： 重置所有玩家的额外数据
+- 指令7-7： `/zreset [name]`
+- 功能7-7： 重置这个玩家的人物数据，按照 tshock 的 ssconfig.json 的配置进行重置
+- 指令7-8： `/zreset all`
+- 功能7-8： 重置所有玩家的人物数据，按照 tshock 的 ssconfig.json 的配置进行重置
+- 指令7-9： `/zresetallplayers`
+- 功能7-9： 重置所有玩家的所有数据，适合新开荒时使用， **这个指令会删掉原版 tsCharacter 表和插件 Zhipm_PlayerBackUp 和 Zhipm_PlayerExtra 表中的所有数据！** 
 -
 - 权限8： `zhipm.vi`
 - 指令8-1： `/vi [name]`

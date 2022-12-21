@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using OTAPI;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -16,16 +17,40 @@ namespace ZHIPlayerManager
 
         public override Version Version => new Version(1, 0, 0, 0);
 
-        //人物备份数据库
-        public ZplayerDB ZPDataBase;
-        //额外数据库
-        public ZplayerExtraDB ZPExtraDB;
-        //用来同步额外数据库的集合
-        public List<ExtraData> edPlayers;
-        //广播颜色
-        public Color broadcastColor = new Color(0, 255, 213);
-        //计时器，60 Timer = 1 秒
-        public static long Timer;
+        #region 字段或属性
+        /// <summary>
+        /// 人物备份数据库
+        /// </summary>
+        public static ZplayerDB ZPDataBase { get; set; }
+        /// <summary>
+        /// 额外数据库
+        /// </summary>
+        public static ZplayerExtraDB ZPExtraDB { get; set; }
+        /// <summary>
+        /// 在线玩家的额外数据库的集合
+        /// </summary>
+        public static List<ExtraData> edPlayers { get; set; }
+        /// <summary>
+        /// 广播颜色
+        /// </summary>
+        public readonly static Color broadcastColor = new Color(0, 255, 213);
+        /// <summary>
+        /// 计时器，60 Timer = 1 秒
+        /// </summary>
+        public static long Timer = 0L;
+        /// <summary>
+        /// 记录需要冻结的玩家
+        /// </summary>
+        public static List<MessPlayer> frePlayers = new List<MessPlayer>();
+        /// <summary>
+        /// 需要记录的被击中的npc
+        /// </summary>
+        public static List<StrikeNPC> strikeNPC = new List<StrikeNPC>();
+
+        public readonly string noplayer = "该玩家不存在，请重新输入";
+        public readonly string manyplayer = "该玩家不唯一，请重新输入";
+        public readonly string offlineplayer = "该玩家不在线，正在查询离线数据";
+        #endregion
 
         public ZHIPM(Main game) : base(game) { }
 
@@ -42,6 +67,10 @@ namespace ZHIPlayerManager
             ServerApi.Hooks.ServerJoin.Register(this, OnServerJoin);
             //同步玩家的额外数据库
             ServerApi.Hooks.ServerLeave.Register(this, OnServerLeave);
+
+            ServerApi.Hooks.NpcStrike.Register(this, OnNpcStrike);
+
+            ServerApi.Hooks.NpcKilled.Register(this, OnNPCKilled);
 
 
             #region 指令
@@ -83,6 +112,20 @@ namespace ZHIPlayerManager
             });
 
 
+            Commands.ChatCommands.Add(new Command("zhipm.freeze", ZFreeze, "zfre")
+            {
+                HelpText = "输入 /zfre [name]  来冻结该玩家"
+            });
+            Commands.ChatCommands.Add(new Command("zhipm.freeze", ZUnFreeze, "zunfre")
+            {
+                HelpText = "输入 /zunfre [name]  来解冻该玩家\n输入 /zunfre all  来解冻所有玩家"
+            });
+
+
+            Commands.ChatCommands.Add(new Command("zhipm.reset", ZResetPlayerBuff, "zresetbuff")
+            {
+                HelpText = "输入 /zresetbuff [name]  来清理该玩家的所有Buff\n输入 /zresetbuff all  来清理所有玩家所有Buff"
+            });
             Commands.ChatCommands.Add(new Command("zhipm.reset", ZResetPlayerDB, "zresetdb")
             {
                 HelpText = "输入 /zresetdb [name]  来清理该玩家的备份数据\n输入 /zresetdb all  来清理所有玩家的备份数据"
@@ -97,7 +140,7 @@ namespace ZHIPlayerManager
             });
             Commands.ChatCommands.Add(new Command("zhipm.reset", ZResetPlayerAll, "zresetallplayers")
             {
-                HelpText = "输入 /zresetallplayers  来清理所有玩家的所有人物数据"
+                HelpText = "输入 /zresetallplayers  来清理所有玩家的所有数据"
             });
 
 
@@ -127,7 +170,47 @@ namespace ZHIPlayerManager
             {
                 HelpText = "输入 /zban add [name]  来封禁无论是否在线的玩家"
             });
+
+
+            Commands.ChatCommands.Add(new Command("zhipm.test", ZTest, "tz")
+            {
+                HelpText = "输入 /tz  来进行测试"
+            });
             #endregion
+        }
+
+        private void ZTest(CommandArgs args)
+        {
+            args.Player.SendInfoMessage("strikenpc.count:" + strikeNPC.Count);
+            if (strikeNPC.Count > 0)
+            {
+                foreach (var v in strikeNPC)
+                {
+                    string playername = "";
+                    foreach (var vv in v.players)
+                    {
+                        playername += vv + ",";
+                    }
+                    args.Player.SendMessage($"id:{v.id}, name:{v.name}, index:{v.index}, players:{playername}\n" +
+                        $"main.id:{Main.npc[v.index].netID}, main.name:{Main.npc[v.index].FullName}, main.active:{Main.npc[v.index].active}", broadcastColor);
+                }
+            }
+            args.Player.SendInfoMessage($"edplayer.count:{edPlayers.Count}");
+            if (edPlayers.Count > 0)
+            {
+                foreach (var v in edPlayers)
+                {
+                    args.Player.SendMessage($"name:{v.Name}, acc:{v.Account}, time:{v.time}", broadcastColor);
+                }
+            }
+            args.Player.SendInfoMessage($"Freeze.count:{frePlayers.Count}");
+            if(frePlayers.Count > 0)
+            {
+                foreach(var v in frePlayers)
+                {
+                    args.Player.SendMessage($"name:{v.name}, acc:{v.account}, uuid:{v.uuid}, ips:{v.IPs}", broadcastColor);
+                }
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -137,8 +220,51 @@ namespace ZHIPlayerManager
                 ServerApi.Hooks.GameUpdate.Deregister(this, OnGameUpdate);
                 ServerApi.Hooks.ServerJoin.Deregister(this, OnServerJoin);
                 ServerApi.Hooks.ServerLeave.Deregister(this, OnServerLeave);
+                ServerApi.Hooks.NpcStrike.Deregister(this, OnNpcStrike);
+                ServerApi.Hooks.NpcKilled.Deregister(this, OnNPCKilled);
             }
             base.Dispose(disposing);
+        }
+
+
+        /// <summary>
+        /// 用来记录数据的类
+        /// </summary>
+        public class MessPlayer
+        {
+            public int account;
+            public string name;
+            public string uuid;
+            public string IPs;
+
+            public MessPlayer()
+            {
+                account = 0;
+                name = "";
+                uuid = "";
+                IPs = "";
+            }
+
+            public MessPlayer(int account, string name, string uuid, string IPs)
+            {
+                this.name = name;
+                this.uuid = uuid;
+                this.account = account;
+                this.IPs = IPs;
+            }
+        }
+
+
+        /// <summary>
+        /// 用来记录被玩家击中的npc
+        /// </summary>
+        public class StrikeNPC
+        {
+            public int index;
+            public int id;
+            public string name = string.Empty;
+            public bool isBoss;
+            public HashSet<string> players = new HashSet<string>();
         }
     }
 }

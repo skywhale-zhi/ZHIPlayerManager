@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Terraria;
@@ -430,17 +429,13 @@ namespace ZHIPlayerManager
             //钓鱼完成任务数目
             p.SendData(PacketTypes.NumberOfAnglerQuestsCompleted, "", p.Index, 0f, 0f, 0f, 0);
             //清空玩家的buff
-            for (int i = 0; i < 22; i++)
-            {
-                p.TPlayer.buffType[i] = 0;
-            }
-            p.SendData(PacketTypes.PlayerBuff, "", p.Index, 0f, 0f, 0f, 0);
+            clearAllBuffFromPlayer(p);
             return true;
         }
 
 
         /// <summary>
-        /// 更新玩家的人物属性数据，线下类型，写入数据库
+        /// 更新玩家的人物属性数据，线下更新类型，写入数据库，不是更新在线的操作
         /// </summary>
         /// <param name="accid"></param>
         /// <param name="pd"></param>
@@ -454,7 +449,7 @@ namespace ZHIPlayerManager
             try
             {
                 PlayerData temp = TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), accid);
-                if (temp != null  && temp.exists)
+                if (temp != null && temp.exists)
                 {
                     TShock.DB.Query("UPDATE tsCharacter SET Health = @0, MaxHealth = @1, Mana = @2, MaxMana = @3, Inventory = @4, spawnX = @6, spawnY = @7, hair = @8, hairDye = @9, hairColor = @10, pantsColor = @11, shirtColor = @12, underShirtColor = @13, shoeColor = @14, hideVisuals = @15, skinColor = @16, eyeColor = @17, questsCompleted = @18, skinVariant = @19, extraSlot = @20, usingBiomeTorches = @21, happyFunTorchTime = @22, unlockedBiomeTorches = @23, currentLoadoutIndex = @24, ateArtisanBread = @25, usedAegisCrystal = @26, usedAegisFruit = @27, usedArcaneCrystal = @28, usedGalaxyPearl = @29, usedGummyWorm = @30, usedAmbrosia = @31, unlockedSuperCart = @32, enabledSuperCart = @33 WHERE Account = @5;", new object[]
                     {
@@ -631,11 +626,8 @@ namespace ZHIPlayerManager
                 p.SendData(PacketTypes.PlayerMana, "", p.Index, 0f, 0f, 0f, 0);
                 p.TPlayer.anglerQuestsFinished = 0;
                 p.SendData(PacketTypes.NumberOfAnglerQuestsCompleted, "", p.Index, 0f, 0f, 0f, 0);
-                for (int i = 0; i < 22; i++)
-                {
-                    p.TPlayer.buffType[i] = 0;
-                }
-                p.SendData(PacketTypes.PlayerBuff, "", p.Index, 0f, 0f, 0f, 0);
+                //清理所有buff
+                clearAllBuffFromPlayer(p);
                 return true;
             }
             catch (Exception ex)
@@ -671,41 +663,10 @@ namespace ZHIPlayerManager
                 {
                     if (item.prefix != 0)
                         sb.Append($"[{Lang.prefix[item.prefix].Value}.{item.Name}]");
-                    else
+                    else if (item.stack != 1)
                         sb.Append($"[{item.Name}:{item.stack}]");
-                }
-            }
-            return sb.ToString();
-        }
-
-
-        /// <summary>
-        /// 返回玩家猪猪等储蓄物内的物品的字符串
-        /// </summary>
-        /// <param name="chest"></param>
-        /// <param name="slots"></param>
-        /// <param name="Model">0 返回图标文本，1 返回纯文本</param>
-        /// <returns></returns>
-        public static string GetItemsString(Chest chest, int slots, int Model = 0)
-        {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < slots; i++)
-            {
-                Item item = chest.item[i];
-                if (Model == 0 && !item.IsAir)
-                {
-                    if (item.prefix != 0)
-                        sb.Append(string.Format("【[i/p{0}:{1}]】 ", item.prefix, item.netID));
                     else
-                        sb.Append(string.Format("【[i/s{0}:{1}]】 ", item.stack, item.netID));
-                }
-
-                if (Model == 1 && !item.IsAir)
-                {
-                    if (item.prefix != 0)
-                        sb.Append($"[{Lang.prefix[item.prefix].Value}.{item.Name}]");
-                    else
-                        sb.Append($"[{item.Name}:{item.stack}]");
+                        sb.Append($"[{item.Name}]");
                 }
             }
             return sb.ToString();
@@ -736,45 +697,13 @@ namespace ZHIPlayerManager
                 {
                     if (item.PrefixId != 0)
                         sb.Append($"[{Lang.prefix[item.PrefixId].Value}.{Lang.GetItemName(item.NetId)}]");
-                    else
+                    else if (item.Stack != 1)
                         sb.Append($"[{Lang.GetItemName(item.NetId)}:{item.Stack}]");
+                    else
+                        sb.Append($"[{Lang.GetItemName(item.NetId)}]");
                 }
             }
             return sb.ToString();
-        }
-
-
-        /// <summary>
-        /// 查询离线玩家sqlite查询
-        /// </summary>
-        /// <param name="db"></param>
-        /// <param name="plrName"></param>
-        /// <param name="Model"></param>
-        /// <returns></returns>
-        public static string GetOfflinePlayerInv(IDbConnection db, string plrName, int Model = 0)
-        {
-            int userAccountID = TShock.UserAccounts.GetUserAccountID(plrName);
-            string result;
-            using (QueryResult queryResult = DbExt.QueryReader(db, "SELECT * FROM tsCharacter WHERE Account=" + userAccountID))
-            {
-                if (queryResult.Read())
-                {
-                    List<NetItem> list = queryResult.Get<string>("Inventory").Split(new char[] { '~' }).Select(new Func<string, NetItem>(NetItem.Parse)).ToList<NetItem>();
-                    if (list.Count < NetItem.MaxInventory)
-                    {
-                        list.InsertRange(67, new NetItem[2]);
-                        list.InsertRange(77, new NetItem[2]);
-                        list.InsertRange(87, new NetItem[2]);
-                        list.AddRange(new NetItem[NetItem.MaxInventory - list.Count]);
-                    }
-                    result = GetItemsString(list.ToArray(), list.Count, Model);
-                }
-                else
-                {
-                    result = "";
-                }
-            }
-            return result;
         }
 
 
@@ -855,11 +784,11 @@ namespace ZHIPlayerManager
             //离线回档
             if (list.Count == 0)
             {
-                args.Player.SendInfoMessage("该玩家不在线，正在查询离线数据");
+                args.Player.SendInfoMessage(offlineplayer);
                 UserAccount user = TShock.UserAccounts.GetUserAccountByName(args.Parameters[0]);
                 if (user == null)
                 {
-                    args.Player.SendInfoMessage("该玩家不存在");
+                    args.Player.SendInfoMessage(noplayer);
                 }
                 else
                 {
@@ -892,7 +821,7 @@ namespace ZHIPlayerManager
                         catch (Exception ex)
                         {
                             TShock.Log.Error("错误：BackUp " + ex.ToString());
-                            TSPlayer.All.SendErrorMessage("错误：BackUp " + ex.ToString());
+                            args.Player.SendErrorMessage("错误：BackUp " + ex.ToString());
                             Console.WriteLine("错误：BackUp " + ex.ToString());
                         }
                     }
@@ -982,12 +911,122 @@ namespace ZHIPlayerManager
 
 
         /// <summary>
+        /// 将 50~1,1~25, 这种类型的 id~击杀数, 字符串转化成对应的字典集合
+        /// </summary>
+        /// <param name="killstring"></param>
+        /// <returns></returns>
+        public static Dictionary<int, int> killNPCStringToDictionary(string killstring)
+        {
+            if (string.IsNullOrWhiteSpace(killstring))
+                return new Dictionary<int, int>();
+
+            Dictionary<int, int> keyValues = new Dictionary<int, int>();
+            List<string> list1 = new List<string>(killstring.Split(','));
+            list1.RemoveAll(x => string.IsNullOrWhiteSpace(x));
+
+            foreach (string str in list1)
+            {
+                List<string> lst = new List<string>(str.Split('~'));
+                lst.RemoveAll(x => !int.TryParse(x, out int temp));
+                if (lst.Count == 2)
+                    keyValues.Add(int.Parse(lst[0]), int.Parse(lst[1]));
+            }
+            return keyValues;
+        }
+
+
+        /// <summary>
+        /// 将字典集合转化成对应的  50~1,1~25, 这种类型的 id~击杀数, 字符串
+        /// </summary>
+        /// <param name="keyValues"></param>
+        /// <returns></returns>
+        public static string DictionaryToKillNPCString(Dictionary<int, int> keyValues) 
+        { 
+            StringBuilder sb = new StringBuilder();
+            foreach (var v in keyValues)
+            {
+                sb.Append(v.Key.ToString());
+                sb.Append('~');
+                sb.Append(v.Value.ToString());
+                sb.Append(',');
+            }
+            return sb.ToString();
+        }
+
+
+        /// <summary>
+        /// 将字典转化成 史莱姆王(2)，金金鱼(12)，宝箱怪(20) 这样的类型
+        /// </summary>
+        /// <param name="keyValues"> 数据 </param>
+        /// <param name="iswrap"> 是否自动换行 </param>
+        /// <returns></returns>
+        public static string DictionaryToVSString(Dictionary<int, int> keyValues, bool iswrap = true)
+        {
+            StringBuilder sb = new StringBuilder();
+            int coun = 0;
+            foreach (var v in keyValues)
+            {
+                coun++;
+                switch (v.Key)//处理一下特殊npc
+                {
+                    case 592:
+                        sb.Append($"蹦跶{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                    case 593:
+                        sb.Append($"游雨{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                    case 564:
+                        sb.Append($"T1{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                    case 565:
+                        sb.Append($"T3{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                    case 576:
+                        sb.Append($"T2{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                    case 577:
+                        sb.Append($"T3{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                    case 398:
+                        sb.Append("月亮领主(" + v.Value + ")");
+                        break;
+                    default:
+                        sb.Append($"{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
+                        break;
+                }
+                if (coun % 10 == 0 && coun != 0 && iswrap)//防止一行字数过多卡到屏幕边缘看不见了
+                    sb.AppendLine();
+            }
+            if (sb.Length == 0)
+            {
+                sb.Append("无");
+            }
+            return sb.ToString().Trim('，');
+        }
+
+
+        /// <summary>
+        /// 获得 击杀生物 的总数，由字典计算出
+        /// </summary>
+        /// <returns></returns>
+        public int getKillNumFromDictionary(Dictionary<int,int> keyValues)
+        {
+            int count = 0;
+            foreach(var v in keyValues)
+            {
+                count += v.Value;
+            }
+            return count;
+        }
+
+
+        /// <summary>
         /// 导出这个用户成存档plr
         /// </summary>
         /// <param name="player"></param>
         /// <param name="time"> 如果你想导出这个玩家的游玩时间就填，单位秒 </param>
         /// <returns></returns>
-        public bool ExportPlayer(Player player, long time = 0L)
+        public bool ExportPlayer(Player? player, long time = 0L)
         {
             if (player == null)
             {
@@ -1519,7 +1558,6 @@ namespace ZHIPlayerManager
         }
 
 
-
         /// <summary>
         /// 获得这个玩家身上的钱币数目，单位铜币
         /// </summary>
@@ -1558,6 +1596,56 @@ namespace ZHIPlayerManager
             {
                 return -1L;
             }
+        }
+
+
+        /// <summary>
+        /// 清理这个玩家身上所有buff
+        /// </summary>
+        /// <param name="ts"></param>
+        public void clearAllBuffFromPlayer(TSPlayer ts)
+        {
+            if (ts == null)
+                return;
+            for (int i = 0; i < 22; i++)
+            {
+                ts.TPlayer.buffType[i] = 0;
+            }
+            ts.SendData(PacketTypes.PlayerBuff, "", ts.Index, 0f, 0f, 0f, 0);
+        }
+
+
+        /// <summary>
+        /// 将tshock里的ips 转换成单独的ip字符串数组
+        /// </summary>
+        /// <param name="KnownIps"></param>
+        /// <returns></returns>
+        public string[] IPStostringIPs(string KnownIps)
+        {
+            if (string.IsNullOrEmpty(KnownIps))
+                return Array.Empty<string>();
+            string[] ips = KnownIps.Split(',');
+            for (int i = 0; i < ips.Length; i++)
+            {
+                ips[i] = ips[i].Replace("\"", "");
+                ips[i] = ips[i].Replace("[", "");
+                ips[i] = ips[i].Replace("]", "");
+                ips[i] = ips[i].Trim();
+            }
+            return ips;
+        }
+
+
+        /// <summary>
+        /// 向某个玩家发送悬浮字体
+        /// </summary>
+        /// <param name="ts"> 需要发送的玩家 </param>
+        /// <param name="text"> 内容文本 </param>
+        /// <param name="color"> 颜色 </param>
+        /// <param name="pos"> 位置 </param>
+        public void SendText(TSPlayer ts, string text, Color color, Vector2 pos)
+        {
+            ts.SendData(PacketTypes.CreateCombatTextExtended, text, (int)(color).packedValue, pos.X, pos.Y);
         }
     }
 }
