@@ -3045,6 +3045,7 @@ namespace ZHIPlayerManager
                 frePlayers.RemoveAll(x => x.uuid == ts[0].UUID || x.name == ts[0].Name || !string.IsNullOrEmpty(x.IPs) && !string.IsNullOrEmpty(ts[0].IP) && IPStostringIPs(x.IPs).Any(x => ts[0].IP == x));
                 clearAllBuffFromPlayer(ts[0]);
                 args.Player.SendMessage($"玩家 [{ts[0].Name}] 已解冻", new Color(0, 255, 0));
+                ts[0].SendMessage("您已被解冻", new Color(0, 255, 0));
             }
         }
 

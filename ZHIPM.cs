@@ -172,10 +172,12 @@ namespace ZHIPlayerManager
             });
 
 
+            /*
             Commands.ChatCommands.Add(new Command("zhipm.test", ZTest, "tz")
             {
                 HelpText = "输入 /tz  来进行测试"
             });
+            */
             #endregion
         }
 
@@ -213,6 +215,41 @@ namespace ZHIPlayerManager
             }
         }
 
+        /*
+        private void ZTest(CommandArgs args)
+        {
+            args.Player.SendInfoMessage("strikenpc.count:" + strikeNPC.Count);
+            if (strikeNPC.Count > 0)
+            {
+                foreach (var v in strikeNPC)
+                {
+                    string playername = "";
+                    foreach (var vv in v.players)
+                    {
+                        playername += vv + ",";
+                    }
+                    args.Player.SendMessage($"id:{v.id}, name:{v.name}, index:{v.index}, players:{playername}\n" +
+                        $"main.id:{Main.npc[v.index].netID}, main.name:{Main.npc[v.index].FullName}, main.active:{Main.npc[v.index].active}", broadcastColor);
+                }
+            }
+            args.Player.SendInfoMessage($"edplayer.count:{edPlayers.Count}");
+            if (edPlayers.Count > 0)
+            {
+                foreach (var v in edPlayers)
+                {
+                    args.Player.SendMessage($"name:{v.Name}, acc:{v.Account}, time:{v.time}", broadcastColor);
+                }
+            }
+            args.Player.SendInfoMessage($"Freeze.count:{frePlayers.Count}");
+            if(frePlayers.Count > 0)
+            {
+                foreach(var v in frePlayers)
+                {
+                    args.Player.SendMessage($"name:{v.name}, acc:{v.account}, uuid:{v.uuid}, ips:{v.IPs}", broadcastColor);
+                }
+            }
+        }
+        */
         protected override void Dispose(bool disposing)
         {
             if (disposing)

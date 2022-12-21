@@ -321,41 +321,6 @@ namespace ZHIPlayerManager
 
 
             /// <summary>
-            /// 获取这个用户目前有多少个备份槽
-            /// </summary>
-            /// <param name="player">没意义的玩家</param>
-            /// <param name="acctid">需要搜索的该玩家的ID</param>
-            /// <param name="text">返回这些槽的name</param>
-            /// <returns></returns>
-            public int getZPlayerDBMaxSlot(TSPlayer player, int acctid, out List<string> text)
-            {
-                int num = 0;
-                text = new List<string>();
-                try
-                {
-                    using (QueryResult queryResult = database.QueryReader("SELECT * FROM " + tableName + " WHERE Account=@0", new object[]
-                    {
-                        acctid
-                    }))
-                    {
-                        while (queryResult.Read())
-                        {
-                            num++;
-                            text.Add(queryResult.Get<string>("AccAndSlot"));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    TShock.Log.Error("错误：getZPlayerDBMaxSlot " + ex.ToString());
-                    TSPlayer.All.SendErrorMessage("错误：getZPlayerDBMaxSlot " + ex.ToString());
-                    Console.WriteLine("错误：getZPlayerDBMaxSlot " + ex.ToString());
-                }
-                return num;
-            }
-
-
-            /// <summary>
             /// 添加一个用户的备份槽，自动将存档槽像后排，排到大于5自动删除
             /// </summary>
             /// <param name="player"></param>
@@ -585,26 +550,7 @@ namespace ZHIPlayerManager
                     return extraData.backuptime;
                 }
             }
-
-
-            /// <summary>
-            /// 获取这个玩家的游戏自动备份间隔
-            /// </summary>
-            /// <param name="account"></param>
-            /// <returns></returns>
-            public int getPlayerExtraDBBackuptime(int account)
-            {
-                ExtraData? extraData = ReadExtraDB(account);
-                if (extraData == null)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return extraData.backuptime;
-                }
-            }
-
+            
 
             /// <summary>
             /// 将这个用户的额外数据写入数据库
