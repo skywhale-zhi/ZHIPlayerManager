@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Text;
 using Terraria;
+using Terraria.DataStructures;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
@@ -2139,6 +2140,11 @@ namespace ZHIPlayerManager
                                 extraData.time += 1L;
                                 if (extraData.time % 1800L == 0L)
                                 {
+                                    if (config.是否启用点数统计)
+                                    {
+                                        extraData.point += 1000;
+                                        SendText(tsp, "点数奖励 + 1000", broadcastColor, tsp.TPlayer.Center);
+                                    }
                                     tsp.SendMessage("您已经在线了 " + timetostring(extraData.time), broadcastColor);
                                     TShock.Log.Info("玩家 " + extraData.Name + " 已经在线了 " + timetostring(extraData.time));
                                     NetMessage.PlayNetSound(new NetMessage.NetSoundInfo(tsp.TPlayer.Center, 4), tsp.Index, -1);
@@ -2219,7 +2225,7 @@ namespace ZHIPlayerManager
             }
 
             //冻结处理
-            if (Timer % 5L == 0L && frePlayers.Count != 0)
+            if (frePlayers.Count != 0)
             {
                 foreach (var v in frePlayers)
                 {
@@ -2227,6 +2233,30 @@ namespace ZHIPlayerManager
                     {
                         if (x != null && x.IsLoggedIn && (x.UUID.Equals(v.uuid) || x.Name.Equals(v.name) || !string.IsNullOrEmpty(v.IPs) && !string.IsNullOrEmpty(x.IP) && IPStostringIPs(v.IPs).Contains(x.IP)))
                         {
+                            for (int i = 0; i < 22; i++)
+                            {
+                                switch (x.TPlayer.buffType[i])
+                                {
+                                    case 149:
+                                    case 156:
+                                    case 47:
+                                    case 23:
+                                    case 31:
+                                    case 80:
+                                    case 88:
+                                    case 120:
+                                    case 145:
+                                    case 163:
+                                    case 199:
+                                    case 160:
+                                    case 197:
+                                        break;
+                                    default:
+                                        x.TPlayer.buffType[i] = 0;
+                                        break;
+                                }
+                            }
+                            x.SendData(PacketTypes.PlayerBuff, "", x.Index, 0f, 0f, 0f, 0);
                             x.SetBuff(149, 720);//网住
                             x.SetBuff(156, 720);//石化
                             x.SetBuff(47, 300); //冰冻
@@ -2244,6 +2274,25 @@ namespace ZHIPlayerManager
                             {
                                 x.SendInfoMessage("您已被冻结，详情请询问管理员");
                                 SendText(x, "您已被冻结", Color.Red, x.TPlayer.Center);
+                            }
+                            x.Teleport(v.pos.X, v.pos.Y);
+                            if (Timer > v.clock + 60)
+                            {
+                                bool flag = false;
+                                foreach (var v in x.TPlayer.buffType)
+                                {
+                                    if (v == 149)
+                                    {
+                                        flag = true;
+                                        break;
+                                    }
+                                }
+                                if (!flag)
+                                {
+                                    NetMessage.SendPlayerDeath(x.Index, PlayerDeathReason.ByCustomReason(""), int.MaxValue, new Random().Next(-1, 1), false, -1, -1);
+                                    if (Timer % 240L == 0)
+                                        x.SendInfoMessage("不要耍小聪明");
+                                }
                             }
                         }
                     });
@@ -2536,7 +2585,7 @@ namespace ZHIPlayerManager
                 string temp4 = config.是否启用死亡次数统计 ? ("\n输入 /zsort death [num]  来查看当前[num]个人物死亡次数排行榜\n" +
                                                         "输入 /zsort death  来查看人物死亡次数排行榜前十名\n" +
                                                         "输入 /zsort death all  来查看所有玩家死亡次数排行榜") : "";
-                string temp5 = config.是否启用死亡次数统计 && config.是否启用在线时长统计 ? 
+                string temp5 = config.是否启用死亡次数统计 && config.是否启用在线时长统计 ?
                                                        ("\n输入 /zsort clumsy  来查看人物手残排行榜前十名\n" +
                                                         "输入 /zsort clumsy [num]  来查看当前[num]个人物手残排行榜\n" +
                                                         "输入 /zsort clumsy all  来查看所有玩家手残排行榜") : "";
@@ -3147,7 +3196,7 @@ namespace ZHIPlayerManager
                     }
                 }
             }
-            
+
             else
             {
                 args.Player.SendInfoMessage("输入 /zsort help  来查看排序系列指令帮助");
@@ -3268,7 +3317,7 @@ namespace ZHIPlayerManager
                     }
                     else
                     {
-                        frePlayers.Add(new MessPlayer(user.ID, user.Name, user.UUID, user.KnownIps));
+                        frePlayers.Add(new MessPlayer(user.ID, user.Name, user.UUID, user.KnownIps, Vector2.Zero));
                         args.Player.SendMessage($"玩家 [{user.Name}] 冻结成功", new Color(0, 255, 0));
                     }
                 }
@@ -3284,7 +3333,7 @@ namespace ZHIPlayerManager
                         }
                         else
                         {
-                            frePlayers.Add(new MessPlayer(users[0].ID, users[0].Name, users[0].UUID, users[0].KnownIps));
+                            frePlayers.Add(new MessPlayer(users[0].ID, users[0].Name, users[0].UUID, users[0].KnownIps, Vector2.Zero));
                             args.Player.SendMessage($"玩家 [{users[0].Name}] 冻结成功", new Color(0, 255, 0));
                         }
                     }
@@ -3313,7 +3362,7 @@ namespace ZHIPlayerManager
                 else
                 {
                     clearAllBuffFromPlayer(ts[0]);
-                    frePlayers.Add(new MessPlayer(ts[0].Account.ID, ts[0].Name, ts[0].UUID, ts[0].Account.KnownIps));
+                    frePlayers.Add(new MessPlayer(ts[0].Account.ID, ts[0].Name, ts[0].UUID, ts[0].Account.KnownIps, ts[0].TPlayer.Center));
                     args.Player.SendMessage($"玩家 [{ts[0].Name}] 冻结成功", new Color(0, 255, 0));
                 }
             }
@@ -3517,6 +3566,24 @@ namespace ZHIPlayerManager
                             snpc.value = args.Npc.value + 300; break;
                         default:
                             snpc.value = args.Npc.value; break;
+                    }
+
+                    if (!Main.hardMode)
+                    {
+                        switch (snpc.id)
+                        {//肉前真菌敌怪价格降低 2/3
+                            case 254:
+                            case 255:
+                            case 257:
+                            case 258:
+                            case 259:
+                            case 260:
+                            case 261:
+                            case 634:
+                            case 635:
+                                snpc.value /= 3; break;
+                            default: break;
+                        }
                     }
 
                     //天顶世界对宝箱怪的价值进行限定

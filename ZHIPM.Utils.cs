@@ -1594,9 +1594,10 @@ namespace ZHIPlayerManager
                     {
                         if (pd.inventory[i].NetId == 71 || pd.inventory[i].NetId == 72 || pd.inventory[i].NetId == 73 || pd.inventory[i].NetId == 74)
                         {
-                            items.Add(TShock.Utils.GetItemById(pd.inventory[i].NetId));
-                            items[i].stack = pd.inventory[i].Stack;
-                            items[i].prefix = pd.inventory[i].PrefixId;
+                            Item temp = TShock.Utils.GetItemById(pd.inventory[i].NetId);
+                            temp.stack = pd.inventory[i].Stack;
+                            temp.prefix = pd.inventory[i].PrefixId;
+                            items.Add(temp);
                         }
                     }
                     return Terraria.Utils.CoinsCount(out bool flag, items.ToArray(), new int[0]);

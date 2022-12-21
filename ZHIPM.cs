@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using OTAPI;
 using Terraria;
 using TerrariaApi.Server;
 using TShockAPI;
@@ -16,7 +15,7 @@ namespace ZHIPlayerManager
 
         public override string Name => "ZHIPlayerManager";
 
-        public override Version Version => new Version(1, 0, 0, 0);
+        public override Version Version => new Version(1, 0, 0, 1);
 
         #region 字段或属性
         /// <summary>
@@ -227,6 +226,8 @@ namespace ZHIPlayerManager
             public int account;
             public string name;
             public string uuid;
+            public Vector2 pos;
+            public long clock;
             /// <summary>
             /// 只接受来自 user 的knowIPs，不是单个ip
             /// </summary>
@@ -238,14 +239,21 @@ namespace ZHIPlayerManager
                 name = "";
                 uuid = "";
                 IPs = "";
+                pos = new Vector2(Main.spawnTileX * 16, Main.spawnTileY * 16);
+                clock = Timer;
             }
 
-            public MessPlayer(int account, string name, string uuid, string IPs)
+            public MessPlayer(int account, string name, string uuid, string IPs, Vector2 pos)
             {
                 this.name = name;
                 this.uuid = uuid;
                 this.account = account;
                 this.IPs = IPs;
+                this.clock = Timer;
+                if(pos == Vector2.Zero)
+                    this.pos = new Vector2(0, 999999);
+                else
+                    this.pos = pos;
             }
         }
 
