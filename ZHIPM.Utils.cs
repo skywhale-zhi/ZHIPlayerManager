@@ -1688,7 +1688,7 @@ namespace ZHIPlayerManager
             Dictionary<int, int> sortpairs = new Dictionary<int, int>();
 
             sb.AppendLine($"共有 [c/74F3C9:{playerAndDamage.Count}] 位玩家击败了 [c/74F3C9:{BossName}]");
-
+            //简单的排个序
             while (playerAndDamage.Count > 0)
             {
                 int key = 0;
@@ -1710,7 +1710,7 @@ namespace ZHIPlayerManager
 
             foreach (var v in sortpairs)
             {
-                sb.AppendLine($"{TShock.UserAccounts.GetUserAccountByID(v.Key).Name}    伤害: [c/74F3C9:{v.Value}]    比重: <{v.Value * 1.0f / alldamage:0.00%}> ");
+                sb.AppendLine($"{TShock.UserAccounts.GetUserAccountByID(v.Key).Name}    伤害: [c/74F3C9:{v.Value}]    比重: {v.Value * 1.0f / alldamage:0.00%} ");
             }
             TSPlayer.All.SendMessage(sb.ToString(), Color.Bisque);
         }

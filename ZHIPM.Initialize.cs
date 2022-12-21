@@ -2572,7 +2572,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 在线时长 {timetostring(list[i].time)}");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 在线时长 {timetostring(list[i].time)}");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2594,7 +2594,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 在线时长 {timetostring(list[i].time)}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 在线时长 {timetostring(list[i].time)}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2604,7 +2604,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 在线时长 {timetostring(list[i].time)}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 在线时长 {timetostring(list[i].time)}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2640,9 +2640,9 @@ namespace ZHIPlayerManager
                     for (int i = 0; i < num; i++)
                     {
                         if (args.Player.IsLoggedIn)
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name))}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name))}");
                         else
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name), 1)}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name), 1)}");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2665,9 +2665,9 @@ namespace ZHIPlayerManager
                         for (int i = 0; i < count; i++)
                         {
                             if (args.Player.IsLoggedIn)
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name))}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name))}");
                             else
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name), 1)}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name), 1)}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2678,9 +2678,9 @@ namespace ZHIPlayerManager
                         for (int i = 0; i < list.Count; i++)
                         {
                             if (args.Player.IsLoggedIn)
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name))}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name))}");
                             else
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name), 1)}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总硬币数 {cointostring(getPlayerCoin(list[i].Name), 1)}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2713,7 +2713,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总完成任务鱼数 {TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), list[i].ID).questsCompleted}");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总完成任务鱼数 {TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), list[i].ID).questsCompleted}");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2735,7 +2735,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总完成任务鱼数 {TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), list[i].ID).questsCompleted}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总完成任务鱼数 {TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), list[i].ID).questsCompleted}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2745,7 +2745,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 总完成任务鱼数 {TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), list[i].ID).questsCompleted}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 总完成任务鱼数 {TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), list[i].ID).questsCompleted}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2774,7 +2774,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀生物总数 {list[i].killNPCnum} 个");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀生物总数 {list[i].killNPCnum} 个");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2796,7 +2796,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀生物总数 {list[i].killNPCnum} 个");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀生物总数 {list[i].killNPCnum} 个");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2806,7 +2806,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀生物总数 {list[i].killNPCnum} 个");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀生物总数 {list[i].killNPCnum} 个");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2836,7 +2836,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀Boss总数 {getKillNumFromDictionary(list[i].killBossID)} 个");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀Boss总数 {getKillNumFromDictionary(list[i].killBossID)} 个");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2858,7 +2858,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀Boss总数 {getKillNumFromDictionary(list[i].killBossID)} 个");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀Boss总数 {getKillNumFromDictionary(list[i].killBossID)} 个");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2868,7 +2868,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀Boss总数 {getKillNumFromDictionary(list[i].killBossID)} 个");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀Boss总数 {getKillNumFromDictionary(list[i].killBossID)} 个");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2898,7 +2898,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀罕见生物总数 {getKillNumFromDictionary(list[i].killRareNPCID)} 个");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀罕见生物总数 {getKillNumFromDictionary(list[i].killRareNPCID)} 个");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2920,7 +2920,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀罕见生物总数 {getKillNumFromDictionary(list[i].killRareNPCID)} 个");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀罕见生物总数 {getKillNumFromDictionary(list[i].killRareNPCID)} 个");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2930,7 +2930,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 击杀罕见生物总数 {getKillNumFromDictionary(list[i].killRareNPCID)} 个");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 击杀罕见生物总数 {getKillNumFromDictionary(list[i].killRareNPCID)} 个");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2959,7 +2959,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 点数 {list[i].point} ");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 点数 {list[i].point} ");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -2981,7 +2981,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 点数 {list[i].point}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 点数 {list[i].point}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -2991,7 +2991,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 点数 {list[i].point}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 点数 {list[i].point}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -3020,7 +3020,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     for (int i = 0; i < num; i++)
                     {
-                        sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 死亡次数 {list[i].deathCount} ");
+                        sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 死亡次数 {list[i].deathCount} ");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -3042,7 +3042,7 @@ namespace ZHIPlayerManager
                         }
                         for (int i = 0; i < count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 死亡次数 {list[i].deathCount}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 死亡次数 {list[i].deathCount}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -3052,7 +3052,7 @@ namespace ZHIPlayerManager
                         StringBuilder sb = new StringBuilder();
                         for (int i = 0; i < list.Count; i++)
                         {
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 死亡次数 {list[i].deathCount}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 死亡次数 {list[i].deathCount}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -3096,9 +3096,9 @@ namespace ZHIPlayerManager
                     for (int i = 0; i < num; i++)
                     {
                         if (args.Player.IsLoggedIn)
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
                         else
-                            sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
+                            sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
                     }
                     args.Player.SendMessage(sb.ToString(), TextColor());
                     TShock.Log.Info(sb.ToString());
@@ -3121,9 +3121,9 @@ namespace ZHIPlayerManager
                         for (int i = 0; i < count; i++)
                         {
                             if (args.Player.IsLoggedIn)
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
                             else
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
@@ -3134,9 +3134,9 @@ namespace ZHIPlayerManager
                         for (int i = 0; i < list.Count; i++)
                         {
                             if (args.Player.IsLoggedIn)
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
                             else
-                                sb.AppendLine($"第 {i + 1} 名: 【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
+                                sb.AppendLine($"第 {i + 1} 名:【{list[i].Name}】 菜鸡值 {list[i].deathCount * 1000.0 / list[i].time:0.00}");
                         }
                         args.Player.SendMessage(sb.ToString(), TextColor());
                         TShock.Log.Info(sb.ToString());
