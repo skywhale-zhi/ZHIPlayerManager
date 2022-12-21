@@ -10,6 +10,9 @@
     <Reference Include="MySql.Data">
       <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件5.0\MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件4.5.18\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="OTAPI">
       <HintPath>C:\Users\86199\Desktop\tl\泰拉瑞亚开服工具\插件开发所需要的库文件\库文件5.0\OTAPI.dll</HintPath>
     </Reference>

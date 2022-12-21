@@ -18,8 +18,6 @@ namespace ZHIPlayerManager
 
             private string tableName = "";
 
-            private readonly int MaxSlot = 5;
-
 
             /// <summary>
             /// 构造函数
@@ -171,7 +169,7 @@ namespace ZHIPlayerManager
                 {
                     return false;
                 }
-                if (slot > MaxSlot || slot < 1)
+                if (slot > config.每个玩家最多几个备份存档 || slot < 1)
                 {
                     return false;
                 }
@@ -321,7 +319,7 @@ namespace ZHIPlayerManager
 
 
             /// <summary>
-            /// 添加一个用户的备份槽，自动将存档槽像后排，排到大于5自动删除
+            /// 添加一个用户的备份槽，自动将存档槽像后排，排到大于上限时自动删除
             /// </summary>
             /// <param name="player"></param>
             /// <returns></returns>
@@ -332,7 +330,7 @@ namespace ZHIPlayerManager
                     return false;
                 }
                 int num = getZPlayerDBMaxSlot(player, player.Account.ID, out List<string> text);
-                if (num < 5)
+                if (num < config.每个玩家最多几个备份存档)
                 {
                     try
                     {
@@ -358,12 +356,10 @@ namespace ZHIPlayerManager
                 {
                     try
                     {
-                        text.RemoveAll((string x) =>
-                        x.Equals(player.Account.ID.ToString() + "-" + 1.ToString()) ||
-                        x.Equals(player.Account.ID.ToString() + "-" + 2.ToString()) ||
-                        x.Equals(player.Account.ID.ToString() + "-" + 3.ToString()) ||
-                        x.Equals(player.Account.ID.ToString() + "-" + 4.ToString())
-                        );
+                        for(int c = 1; c < config.每个玩家最多几个备份存档; c++)
+                        {
+                            text.RemoveAll(x => x.Equals(player.Account.ID.ToString() + "-" + c.ToString()));
+                        }
                         foreach (string str in text)
                         {
                             database.Query("DELETE FROM " + tableName + " WHERE AccAndSlot = @0;", new object[]
@@ -458,7 +454,11 @@ namespace ZHIPlayerManager
                     new SqlColumn("backuptime", MySqlDbType.Int32),
                     new SqlColumn("killNPCnum", MySqlDbType.Int32),
                     new SqlColumn("killBossID", MySqlDbType.Text),
-                    new SqlColumn("killRareNPCID", MySqlDbType.Text)
+                    new SqlColumn("killRareNPCID", MySqlDbType.Text),
+                    new SqlColumn("point", MySqlDbType.Int64),
+                    new SqlColumn("hideKillTips", MySqlDbType.Int32),
+                    new SqlColumn("hidePointTips", MySqlDbType.Int32),
+                    new SqlColumn("deathCount", MySqlDbType.Int32)
                 });
                 IQueryBuilder queryBuilder;
                 if (database.GetSqlType() != SqlType.Sqlite)
@@ -500,6 +500,10 @@ namespace ZHIPlayerManager
                             extraData.killNPCnum = queryResult.Get<int>("killNPCnum");
                             extraData.killBossID = killNPCStringToDictionary(queryResult.Get<string>("killBossID"));
                             extraData.killRareNPCID = killNPCStringToDictionary(queryResult.Get<string>("killRareNPCID"));
+                            extraData.point = queryResult.Get<long>("point");
+                            extraData.hideKillTips = queryResult.Get<int>("hideKillTips") != 0;
+                            extraData.hidePointTips = queryResult.Get<int>("hidePointTips") != 0;
+                            extraData.deathCount = queryResult.Get<int>("deathCount"); 
                         }
                     }
                     return extraData;
@@ -531,25 +535,6 @@ namespace ZHIPlayerManager
                     return extraData.time;
                 }
             }
-
-
-            /// <summary>
-            /// 获取这个玩家的游戏自动备份间隔
-            /// </summary>
-            /// <param name="account"></param>
-            /// <returns></returns>
-            public int getPlayerExtraDBBackuptime(int account)
-            {
-                ExtraData? extraData = ReadExtraDB(account);
-                if (extraData == null)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return extraData.backuptime;
-                }
-            }
             
 
             /// <summary>
@@ -565,7 +550,7 @@ namespace ZHIPlayerManager
                 {
                     try
                     {
-                        database.Query("INSERT INTO " + tableName + " (Account, Name, time, backuptime, killNPCnum, killBossID, killRareNPCID) VALUES (@0, @1, @2, @3, @4, @5, @6);", new object[]
+                        database.Query("INSERT INTO " + tableName + " (Account, Name, time, backuptime, killNPCnum, killBossID, killRareNPCID, point, hideKillTips, hidePointTips, deathCount) VALUES (@0, @1, @2, @3, @4, @5, @6, @7, @8, @9, @10);", new object[]
                         {
                                 ed.Account,
                                 ed.Name,
@@ -573,7 +558,11 @@ namespace ZHIPlayerManager
                                 ed.backuptime,
                                 ed.killNPCnum,
                                 DictionaryToKillNPCString(ed.killBossID),
-                                DictionaryToKillNPCString(ed.killRareNPCID)
+                                DictionaryToKillNPCString(ed.killRareNPCID),
+                                ed.point,
+                                ed.hideKillTips ? 1 : 0,
+                                ed.hidePointTips ? 1 : 0,
+                                ed.deathCount
                         });
                         return true;
                     }
@@ -588,7 +577,7 @@ namespace ZHIPlayerManager
                 //否则就更新数据
                 try
                 {
-                    database.Query("UPDATE " + tableName + " SET Name = @0, time = @1, backuptime = @3, killNPCnum = @4, killBossID = @5, killRareNPCID = @6 WHERE Account = @2;", new object[]
+                    database.Query("UPDATE " + tableName + " SET Name = @0, time = @1, backuptime = @3, killNPCnum = @4, killBossID = @5, killRareNPCID = @6, point = @7, hideKillTips = @8, hidePointTips = @9, deathCount = @10 WHERE Account = @2;", new object[]
                     {
                             ed.Name,
                             ed.time,
@@ -596,7 +585,11 @@ namespace ZHIPlayerManager
                             ed.backuptime,
                             ed.killNPCnum,
                             DictionaryToKillNPCString(ed.killBossID),
-                            DictionaryToKillNPCString(ed.killRareNPCID)
+                            DictionaryToKillNPCString(ed.killRareNPCID),
+                            ed.point,
+                            ed.hideKillTips ? 1 : 0,
+                            ed.hidePointTips ? 1 : 0,
+                            ed.deathCount
                     });
                     return true;
                 }
@@ -659,15 +652,46 @@ namespace ZHIPlayerManager
 
 
             /// <summary>
-            /// 获取当前额外数据库的所有成员
+            /// 获取当前额外数据库的所有成员，按照顺序类型排序，注意某些数据无法排序会按照Account默认排列
             /// </summary>
+            /// <param name="extraDataDate"> 你想要排序的类型 </param>
+            /// <param name="asc"> 是否升序，若为否就是降序 </param>
             /// <returns></returns>
-            public List<ExtraData> ListAllExtraDB()
+            public List<ExtraData> ListAllExtraDB(ExtraDataDate extraDataDate = ExtraDataDate.Account, bool asc = true)
             {
                 List<ExtraData> list = new List<ExtraData>();
+                string sqlmeg = "SELECT * FROM " + tableName;
+                switch (extraDataDate)
+                {
+                    case ExtraDataDate.Account:
+                    case ExtraDataDate.hidePointTips:
+                    case ExtraDataDate.hidekillTips:
+                    case ExtraDataDate.killBossID:
+                    case ExtraDataDate.killRareNPCID:
+                        sqlmeg += " ORDER BY Account";break;
+                    case ExtraDataDate.Name:
+                        sqlmeg += " ORDER BY Name"; break;
+                    case ExtraDataDate.time:
+                        sqlmeg += " ORDER BY time"; break;
+                    case ExtraDataDate.backuptime:
+                        sqlmeg += " ORDER BY backuptime"; break;
+                    case ExtraDataDate.killNPCnum:
+                        sqlmeg += " ORDER BY killNPCnum"; break;
+                    case ExtraDataDate.point:
+                        sqlmeg += " ORDER BY point"; break;
+                    case ExtraDataDate.deathCount:
+                        sqlmeg += " ORDER BY deathCount"; break;
+                    default:
+                        break;
+                }
+                if (asc)
+                    sqlmeg += " ASC";
+                else
+                    sqlmeg += " DESC";
+
                 try
                 {
-                    using (QueryResult queryResult = database.QueryReader("SELECT * FROM " + tableName))
+                    using (QueryResult queryResult = database.QueryReader(sqlmeg))
                     {
                         while (queryResult.Read())
                         {
@@ -679,7 +703,11 @@ namespace ZHIPlayerManager
                                 backuptime = queryResult.Get<int>("backuptime"),
                                 killNPCnum = queryResult.Get<int>("killNPCnum"),
                                 killBossID = killNPCStringToDictionary(queryResult.Get<string>("killBossID")),
-                                killRareNPCID = killNPCStringToDictionary(queryResult.Get<string>("killRareNPCID"))
+                                killRareNPCID = killNPCStringToDictionary(queryResult.Get<string>("killRareNPCID")),
+                                point = queryResult.Get<long>("point"),
+                                hideKillTips = queryResult.Get<int>("hideKillTips") != 0,
+                                hidePointTips = queryResult.Get<int>("hidePointTips") != 0,
+                                deathCount = queryResult.Get<int>("deathCount")
                             });
                         }
                     }
@@ -695,26 +723,62 @@ namespace ZHIPlayerManager
             }
         }
 
-
         /// <summary>
         /// 额外数据库的类
         /// </summary>
         public class ExtraData
         {
-            //账户名称
+            /// <summary>
+            /// 账户ID
+            /// </summary>
             public int Account;
-            //name
+            /// <summary>
+            /// 名字
+            /// </summary>
             public string Name;
-            //在线总时长，秒
+            /// <summary>
+            /// 在线总时长，单位秒
+            /// </summary>
             public long time;
-            //备份间隔，分钟
+            /// <summary>
+            /// 备份间隔，单位分钟
+            /// </summary>
             public int backuptime;
-            //击杀生物数
+            /// <summary>
+            /// 击杀生物数
+            /// </summary>
             public int killNPCnum;
-            //击杀boss的id统计
+            /// <summary>
+            /// 击杀boss的id统计，id -> 击杀数
+            /// </summary>
             public Dictionary<int,int> killBossID;
-            //击杀罕见生物的ip统计
+            /// <summary>
+            /// 击杀罕见生物的id统计，id -> 击杀数
+            /// </summary>
             public Dictionary<int,int> killRareNPCID;
+            /// <summary>
+            /// 点数
+            /// </summary>
+            public long point;
+            /// <summary>
+            /// 隐藏击杀 npc +1 的字
+            /// </summary>
+            public bool hideKillTips;
+            /// <summary>
+            /// 隐藏点数 +1$ 的字
+            /// </summary>
+            public bool hidePointTips;
+            /// <summary>
+            /// 死亡次数
+            /// </summary>
+            public int deathCount;
+
+            //不写入数据库的变量
+            /// <summary>
+            /// 是否死亡
+            /// </summary>
+            public bool dead;
+
             public ExtraData()
             {
                 Account = -1;
@@ -724,17 +788,37 @@ namespace ZHIPlayerManager
                 killNPCnum = 0;
                 killBossID = new Dictionary<int, int>();
                 killRareNPCID = new Dictionary<int, int>();
+                point = 0L;
+                hideKillTips = false;
+                hidePointTips = false;
+                deathCount = 0;
+                dead = false;
             }
-            public ExtraData(int Account, string Name, long time, int backuptime, int killNPCnum, Dictionary<int,int> killBossID, Dictionary<int,int> killRareNPCID)
+
+            public ExtraData(int Account, string Name, long time, int backuptime, int killNPCnum, long point, bool hideKillTips, bool hidePointTips)
             {
                 this.Account = Account;
                 this.Name = Name;
                 this.time = time;
                 this.backuptime = backuptime;
                 this.killNPCnum = killNPCnum;
-                this.killBossID = killBossID;
-                this.killRareNPCID = killRareNPCID;
+                this.killBossID = new Dictionary<int, int>();
+                this.killRareNPCID = new Dictionary<int, int>();
+                this.point = point;
+                this.hideKillTips = hideKillTips;
+                this.hidePointTips = hidePointTips;
+                this.deathCount = 0;
+                this.dead = false;
             }
+        }
+
+
+        /// <summary>
+        /// ExtraData类内成员名字的枚举
+        /// </summary>
+        public enum ExtraDataDate
+        {
+            Account, Name, time, backuptime, killNPCnum, killBossID, killRareNPCID, point, hidekillTips, hidePointTips, deathCount
         }
     }
 }

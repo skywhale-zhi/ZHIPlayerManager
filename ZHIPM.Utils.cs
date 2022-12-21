@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Terraria;
 using Terraria.IO;
+using Terraria.Localization;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
@@ -644,7 +645,7 @@ namespace ZHIPlayerManager
         /// </summary>
         /// <param name="items"></param>
         /// <param name="slots"></param>
-        /// <param name="Model"></param>
+        /// <param name="Model">0 返回图标文本，1 返回纯文本</param>
         /// <returns></returns>
         public static string GetItemsString(Item[] items, int slots, int Model = 0)
         {
@@ -708,11 +709,11 @@ namespace ZHIPlayerManager
 
 
         /// <summary>
-        /// 给出一个字符串和每行几个物品数，返回排列好的字符串
+        /// 给出一个字符串和每行几个物品数，返回排列好的字符串，按空格进行分割
         /// </summary>
-        /// <param name="str"></param>
-        /// <param name="num"></param>
-        /// <param name="block"></param>
+        /// <param name="str"> 需要排列的文本 </param>
+        /// <param name="num"> 一行几个 </param>
+        /// <param name="block">  </param>
         /// <returns></returns>
         public static string FormatArrangement(string str, int num, string block = "")
         {
@@ -940,8 +941,8 @@ namespace ZHIPlayerManager
         /// </summary>
         /// <param name="keyValues"></param>
         /// <returns></returns>
-        public static string DictionaryToKillNPCString(Dictionary<int, int> keyValues) 
-        { 
+        public static string DictionaryToKillNPCString(Dictionary<int, int> keyValues)
+        {
             StringBuilder sb = new StringBuilder();
             foreach (var v in keyValues)
             {
@@ -994,14 +995,19 @@ namespace ZHIPlayerManager
                         sb.Append($"{Lang.GetNPCNameValue(v.Key)}({v.Value})，");
                         break;
                 }
-                if (coun % 10 == 0 && coun != 0 && iswrap)//防止一行字数过多卡到屏幕边缘看不见了
+                if (coun % 10 == 0 && iswrap)//防止一行字数过多卡到屏幕边缘看不见了
                     sb.AppendLine();
             }
             if (sb.Length == 0)
             {
                 sb.Append("无");
             }
-            return sb.ToString().Trim('，');
+            string ss = sb.ToString();
+            while(ss.Last() == '\n' || ss.Last() == '，' || ss.Last() == ' ')
+            {
+                ss = ss.Trim('，', '\n', ' ');
+            }
+            return ss;
         }
 
 
@@ -1009,10 +1015,10 @@ namespace ZHIPlayerManager
         /// 获得 击杀生物 的总数，由字典计算出
         /// </summary>
         /// <returns></returns>
-        public int getKillNumFromDictionary(Dictionary<int,int> keyValues)
+        public int getKillNumFromDictionary(Dictionary<int, int> keyValues)
         {
             int count = 0;
-            foreach(var v in keyValues)
+            foreach (var v in keyValues)
             {
                 count += v.Value;
             }
@@ -1034,22 +1040,24 @@ namespace ZHIPlayerManager
             }
             string text = new string(player.name);
             //移除不合法的字符
-            for (int i = 0; i < text.Length; i++)
+            for (int i = 0; i < text.Length; ++i)
             {
                 bool flag = text[i] == '\\' || text[i] == '/' || text[i] == ':' || text[i] == '*' || text[i] == '?' || text[i] == '"' || text[i] == '<' || text[i] == '>' || text[i] == '|';
                 if (flag)
                 {
                     text = text.Remove(i, 1);
+                    i--;
                 }
             }
             string worldname = new string(Main.worldName);
             //移除不合法的字符
-            for (int i = 0; i < worldname.Length; i++)
+            for (int i = 0; i < worldname.Length; ++i)
             {
                 bool flag = worldname[i] == '\\' || worldname[i] == '/' || worldname[i] == ':' || worldname[i] == '*' || worldname[i] == '?' || worldname[i] == '"' || worldname[i] == '<' || worldname[i] == '>' || worldname[i] == '|';
                 if (flag)
                 {
                     worldname = worldname.Remove(i, 1);
+                    i--;
                 }
             }
             PlayerFileData playerFileData = new PlayerFileData();
@@ -1057,7 +1065,7 @@ namespace ZHIPlayerManager
             playerFileData.Player = player;
             playerFileData._isCloudSave = false;
             FileData fileData = playerFileData;
-            fileData._path = TShock.SavePath + $"/ZhiPlayers/{worldname}/{text}.plr";
+            fileData._path = TShock.SavePath + $"/Zhipm/{worldname}/{text}.plr";
             playerFileData.SetPlayTime(new TimeSpan(time * 10000000L));
             Main.LocalFavoriteData.ClearEntry(playerFileData);
             try
@@ -1069,9 +1077,9 @@ namespace ZHIPlayerManager
                 }
                 else
                 {
-                    if (!Directory.Exists(TShock.SavePath + "/ZhiPlayers/" + worldname))
+                    if (!Directory.Exists(TShock.SavePath + "/Zhipm/" + worldname))
                     {
-                        Directory.CreateDirectory(TShock.SavePath + "/ZhiPlayers/" + worldname);
+                        Directory.CreateDirectory(TShock.SavePath + "/Zhipm/" + worldname);
                     }
                     RijndaelManaged rijndaelManaged = new RijndaelManaged();
                     using (Stream stream = new FileStream(path, FileMode.Create))
@@ -1559,16 +1567,16 @@ namespace ZHIPlayerManager
 
 
         /// <summary>
-        /// 获得这个玩家身上的钱币数目，单位铜币
+        /// 获得这个玩家身上的钱币数目，单位铜币，支持离线和在线
         /// </summary>
-        /// <param name="account"></param>
+        /// <param name="name"></param>
         /// <returns></returns>
-        public long getPlayerCoin(int account)
+        public long getPlayerCoin(string name)
         {
             //如果在线的话
             foreach (TSPlayer ts in TShock.Players)
             {
-                if (ts != null && ts.IsLoggedIn && ts.Account.ID == account)
+                if (ts != null && ts.Name == name)
                 {
                     bool flag;
                     long num = Terraria.Utils.CoinsCount(out flag, ts.TPlayer.inventory, new int[] { 58, 57, 56, 55, 54 });
@@ -1580,22 +1588,26 @@ namespace ZHIPlayerManager
                 }
             }
             //离线的话
-            PlayerData pd = TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), account);
-            if (pd.exists)
+            UserAccount user = TShock.UserAccounts.GetUserAccountByName(name);
+            if (user != null)
             {
-                List<Item> items = new List<Item>();
-                for (int i = 0; i < pd.inventory.Length; i++)
+                PlayerData pd = TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), user.ID);
+                if (pd.exists)
                 {
-                    items.Add(TShock.Utils.GetItemById(pd.inventory[i].NetId));
-                    items[i].stack = pd.inventory[i].Stack;
-                    items[i].prefix = pd.inventory[i].PrefixId;
+                    List<Item> items = new List<Item>();
+                    for (int i = 0; i < pd.inventory.Length; i++)
+                    {
+                        items.Add(TShock.Utils.GetItemById(pd.inventory[i].NetId));
+                        items[i].stack = pd.inventory[i].Stack;
+                        items[i].prefix = pd.inventory[i].PrefixId;
+                    }
+                    return Terraria.Utils.CoinsCount(out bool flag, items.ToArray(), new int[0]);
                 }
-                return Terraria.Utils.CoinsCount(out bool flag, items.ToArray(), new int[0]);
+                else
+                    return -1L;
             }
             else
-            {
                 return -1L;
-            }
         }
 
 
@@ -1646,6 +1658,63 @@ namespace ZHIPlayerManager
         public void SendText(TSPlayer ts, string text, Color color, Vector2 pos)
         {
             ts.SendData(PacketTypes.CreateCombatTextExtended, text, (int)(color).packedValue, pos.X, pos.Y);
+        }
+
+
+        /// <summary>
+        /// 给所有玩家发送悬浮字体，但是根据发起者区分颜色
+        /// </summary>
+        /// <param name="ts"> 需要发送的玩家 </param>
+        /// <param name="text"> 发送文本 </param>
+        /// <param name="color1"> 被发送者所看见的颜色 </param>
+        /// <param name="color2"> 除了被发送者其他玩家所看见的颜色 </param>
+        /// <param name="pos"> 位置 </param>
+        public void SendAllText(TSPlayer ts, string text, Color color1, Color color2, Vector2 pos)
+        {
+            if (!ts.RealPlayer || ts.ConnectionAlive)
+            {
+                NetMessage.SendData(119, ts.Index, -1, (text == null) ? null : NetworkText.FromLiteral(text), (int)(color1).packedValue, pos.X, pos.Y);
+                NetMessage.SendData(119, -1, ts.Index, (text == null) ? null : NetworkText.FromLiteral(text), (int)(color2).packedValue, pos.X, pos.Y);
+            }
+        }
+
+
+        /// <summary>
+        /// 将boss击杀排行榜的信息打印出来
+        /// </summary>
+        /// <param name="BossName"></param>
+        /// <param name="playerAndDamage"></param>
+        public void SendKillBossMessage(string BossName, Dictionary<int, int> playerAndDamage, int alldamage)
+        {
+            StringBuilder sb = new StringBuilder();
+            Dictionary<int, int> sortpairs = new Dictionary<int, int>();
+
+            sb.AppendLine($"共有 [c/74F3C9:{playerAndDamage.Count}] 位玩家击败了 [c/74F3C9:{BossName}]");
+
+            while(playerAndDamage.Count > 0)
+            {
+                int key = 0;
+                int damage = 0;
+                foreach(var v in playerAndDamage)
+                {
+                    if(v.Value > damage)
+                    {
+                        key = v.Key;
+                        damage = v.Value;
+                    }
+                }
+                if(key != 0)
+                {
+                    sortpairs.Add(key, damage);
+                    playerAndDamage.Remove(key);
+                }
+            }
+
+            foreach (var v in sortpairs)
+            {
+                sb.AppendLine($"{TShock.UserAccounts.GetUserAccountByID(v.Key).Name}    伤害: [c/74F3C9:{v.Value}]    比重: <{v.Value * 1.0f / alldamage:0.00%}> ");
+            }
+            TSPlayer.All.SendMessage(sb.ToString(), Color.Bisque);
         }
     }
 }
