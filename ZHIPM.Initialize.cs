@@ -22,6 +22,7 @@ namespace ZHIPlayerManager
             else
             {
                 args.Player.SendInfoMessage("输入 /zsave  来备份自己的人物存档\n" +
+                                            "输入 /zsaveauto [minute]  来每隔 minute 分钟自动备份自己的人物存档，当 minute 为 0 时关闭该功能\n" +
                                             "输入 /zvisa [num] 来查看自己的人物备份\n" +
                                             "输入 /zback [name]  来读取该玩家的人物存档\n" +
                                             "输入 /zback [name] [num]  来读取该玩家的第几个人物存档\n" +
@@ -116,6 +117,49 @@ namespace ZHIPlayerManager
             else
             {
                 args.Player.SendMessage("您的备份保存失败！请尝试重进游戏重试", new Color(255, 0, 0));
+            }
+        }
+
+
+        /// <summary>
+        /// 自动备份指令
+        /// </summary>
+        /// <param name="args"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void MySSCSaveAuto(CommandArgs args)
+        {
+            if (args.Parameters.Count != 1)
+            {
+                args.Player.SendInfoMessage("输入 /zsaveauto [minute]  来每隔 minute 分钟自动备份自己的人物存档，当 minute 为 0 时关闭该功能");
+                return;
+            }
+            if (!args.Player.IsLoggedIn)
+            {
+                args.Player.SendInfoMessage("对象不正确，请检查您的状态，您是否为游戏内玩家？");
+                return;
+            }
+            if (int.TryParse(args.Parameters[0], out int num))
+            {
+                if (num < 0)
+                {
+                    args.Player.SendInfoMessage("数字不合理");
+                    return;
+                }
+                ExtraData? ex = edPlayers.Find(x => x.Name == args.Player.Name);
+                if (ex == null)
+                {
+                    args.Player.SendInfoMessage("修改失败，请重进服务器重试");
+                    return;
+                }
+                ex.backuptime = num;
+                if(num != 0)
+                    args.Player.SendMessage("修改成功，你的存档将每隔 " + num + " 分钟自动备份一次，请注意存档覆盖情况，这可能会覆盖你手动备份的部分", new Color(0, 255, 0));
+                else
+                    args.Player.SendMessage("修改成功，你的自动备份已关", new Color(0, 255, 0));
+            }
+            else
+            {
+                args.Player.SendInfoMessage("输入 /zsaveauto [minute]  来每隔 minute 分钟自动备份自己的人物存档，当 minute 为 0 时关闭该功能");
             }
         }
 
@@ -315,6 +359,7 @@ namespace ZHIPlayerManager
                     else
                     {
                         PlayerData playerData1 = player1[0].PlayerData;
+                        playerData1.exists = true;
                         if (UpdateTshockDBCharac(user2.ID, playerData1))
                         {
                             args.Player.SendMessage($"克隆成功！您已将玩家 [{player1[0].Name}] 的数据克隆到玩家 [{user2.Name}] 身上", new Color(0, 255, 0));
@@ -1826,10 +1871,12 @@ namespace ZHIPlayerManager
         /// </summary>
         /// <param name="args"></param>
         private void OnGameUpdate(EventArgs args)
-        {
-            if (Main.time % 60.0 == 0.0)
+        {//自制计时器，60 Timer = 1 秒
+            Timer++;
+            //以秒为单位处理，降低计算机计算量
+            if (Timer % 60L == 0L)
             {
-                //遍历在线玩家，对time进行自增
+                //在线时长 +1 的部分，遍历在线玩家，对time进行自增
                 TSPlayer[] players = TShock.Players;
                 for (int i = 0; i < players.Length; i++)
                 {
@@ -1839,7 +1886,9 @@ namespace ZHIPlayerManager
                         //如果当前玩家已存在，那么更新额外数据
                         if (edPlayers.Exists((ExtraData x) => x.Name == tsp.Name))
                         {
-                            ExtraData extraData = edPlayers.Find((ExtraData x) => x.Name == tsp.Name);
+                            ExtraData? extraData = edPlayers.Find((ExtraData x) => x.Name == tsp.Name);
+                            if (extraData == null)//根本不可能有这种情况
+                                return;
                             extraData.time += 1L;
                             if (extraData.time % 1800L == 0L)
                             {
@@ -1852,7 +1901,7 @@ namespace ZHIPlayerManager
                         else
                         {
                             //注册过了，那么读取
-                            ExtraData extraData = ZPExtraDB.ReadExtraDB(tsp.Account.ID);
+                            ExtraData? extraData = ZPExtraDB.ReadExtraDB(tsp.Account.ID);
                             if (extraData != null)
                             {
                                 edPlayers.Add(extraData);
@@ -1860,19 +1909,43 @@ namespace ZHIPlayerManager
                             //否则创建一个新的
                             else
                             {
-                                ExtraData ex = new ExtraData(tsp.Account.ID, tsp.Name, 0L);
+                                ExtraData ex = new ExtraData(tsp.Account.ID, tsp.Name, 0L, 0);
                                 ZPExtraDB.WriteExtraDB(ex);
                                 edPlayers.Add(ex);
                             }
                         }
                     }
                 }
-                //每10分钟自动保存到数据库一次
-                if (Main.time % 36000.0 == 0.0)
+
+
+                //每10分钟自动将额外数据库保存到数据库一次
+                if (Timer % 36000L == 0L)
                 {
                     foreach (ExtraData ex in edPlayers)
                     {
                         ZPExtraDB.WriteExtraDB(ex);
+                    }
+                }
+
+
+                //自动备份的处理部分，这里以分钟为单位
+                if (Timer % 3600L == 0L)
+                {
+                    foreach (var ex in edPlayers)
+                    {//到达备份间隔时长，备份一次
+                        foreach (TSPlayer ts in TShock.Players)
+                        {
+                            if(ts == null || !ts.IsLoggedIn || ts.Name != ex.Name)
+                            {
+                                continue;
+                            }
+                            if (ex.backuptime != 0L && Timer % (3600L * ex.backuptime) == 0L)
+                            {
+                                ZPExtraDB.WriteExtraDB(ex);
+                                ZPDataBase.AddZPlayerDB(ts);
+                                ts.SendMessage("已自动备份您的人物存档和额外数据", new Color(0, 255, 0));
+                            }
+                        }
                     }
                 }
             }
@@ -1989,7 +2062,7 @@ namespace ZHIPlayerManager
                     StringBuilder sb = new StringBuilder();
                     foreach (var one in players)
                     {
-                        Player player = CreateAPlayer(one.Key.Name, one.Value);
+                        Player? player = CreateAPlayer(one.Key.Name, one.Value);
                         if (ExportPlayer(player, ZPExtraDB.getPlayerExtraDBTime(one.Key.ID)))
                         {
                             if (args.Player.IsLoggedIn)
@@ -2335,19 +2408,22 @@ namespace ZHIPlayerManager
                         }
                         TShock.Bans.InsertBan("acc:" + user.Name, reason, "ZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
                         TShock.Bans.InsertBan("uuid:" + user.UUID, reason, "ZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
-                        string[] ips = user.KnownIps.Split(',');
-                        for (int i = 0; i < ips.Length; i++)
+                        if (!string.IsNullOrWhiteSpace(user.KnownIps))
                         {
-                            ips[i] = ips[i].Replace("\"", "");
-                            ips[i] = ips[i].Replace("[", "");
-                            ips[i] = ips[i].Replace("]", "");
-                            ips[i] = ips[i].Trim();
+                            string[] ips = user.KnownIps.Split(',');
+                            for (int i = 0; i < ips.Length; i++)
+                            {
+                                ips[i] = ips[i].Replace("\"", "");
+                                ips[i] = ips[i].Replace("[", "");
+                                ips[i] = ips[i].Replace("]", "");
+                                ips[i] = ips[i].Trim();
+                            }
+                            foreach (string str in ips)
+                            {
+                                TShock.Bans.InsertBan("ip:" + str, reason, "ZHIPlayerZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
+                            }
                         }
-                        foreach (string str in ips)
-                        {
-                            TShock.Bans.InsertBan("ip:" + str, reason, "ZHIPlayerZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
-                        }
-                        if(!args.Player.IsLoggedIn)
+                        if (!args.Player.IsLoggedIn)
                             args.Player.SendMessage($"用户 {user.Name} 已被 {args.Player.Name} 封禁，指令来源ZHIPlayerManager插件", broadcastColor);
                         TSPlayer.All.SendMessage($"用户 {user.Name} 已被 {args.Player.Name} 封禁，指令来源ZHIPlayerManager插件", broadcastColor);
                         TShock.Log.Info($"用户 {user.Name} 已被 {args.Player.Name} 封禁，指令来源ZHIPlayerManager插件");
@@ -2368,17 +2444,20 @@ namespace ZHIPlayerManager
                             }
                             TShock.Bans.InsertBan("acc:" + users[0].Name, reason, "ZHIPlayerZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
                             TShock.Bans.InsertBan("uuid:" + users[0].UUID, reason, "ZHIPlayerZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
-                            string[] ips = users[0].KnownIps.Split(',');
-                            for (int i = 0; i < ips.Length; i++)
+                            if (!string.IsNullOrWhiteSpace(users[0].KnownIps))
                             {
-                                ips[i] = ips[i].Replace("\"", "");
-                                ips[i] = ips[i].Replace("[", "");
-                                ips[i] = ips[i].Replace("]", "");
-                                ips[i] = ips[i].Trim();
-                            }
-                            foreach (string str in ips)
-                            {
-                                TShock.Bans.InsertBan("ip:" + str, reason, "ZHIPlayerZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
+                                string[] ips = users[0].KnownIps.Split(',');
+                                for (int i = 0; i < ips.Length; i++)
+                                {
+                                    ips[i] = ips[i].Replace("\"", "");
+                                    ips[i] = ips[i].Replace("[", "");
+                                    ips[i] = ips[i].Replace("]", "");
+                                    ips[i] = ips[i].Trim();
+                                }
+                                foreach (string str in ips)
+                                {
+                                    TShock.Bans.InsertBan("ip:" + str, reason, "ZHIPlayerZHIPlayerManager by " + args.Player.Name, DateTime.UtcNow, DateTime.MaxValue);
+                                }
                             }
                             if (!args.Player.IsLoggedIn)
                                 args.Player.SendMessage($"用户 {users[0].Name} 已被 {args.Player.Name} 封禁，指令来源ZHIPlayerManager插件", broadcastColor);

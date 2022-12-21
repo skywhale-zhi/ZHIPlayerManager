@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using System.Data;
-using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using Terraria;
@@ -15,7 +14,7 @@ namespace ZHIPlayerManager
     {
 
         /// <summary>
-        /// 同步玩家所有的数据属性，仅同步在线玩家，在内存中的数据
+        /// 同步玩家的人物数据数据，线上类型，仅同步在线玩家，在内存中的数据
         /// </summary>
         /// <param name="p">你要被同步的玩家</param>
         /// <param name="pd">赋值给他的数据</param>
@@ -448,78 +447,61 @@ namespace ZHIPlayerManager
         /// <returns></returns>
         public bool UpdateTshockDBCharac(int accid, PlayerData pd)
         {
-            bool flag = pd == null || !pd.exists;
-            bool result;
-            if (flag)
+            if (pd == null || !pd.exists)
             {
-                result = false;
+                return false;
             }
-            else
+            try
             {
-                bool flag2 = false;
-                try
+                PlayerData temp = TShock.CharacterDB.GetPlayerData(new TSPlayer(-1), accid);
+                if (temp != null  && temp.exists)
                 {
-                    using (QueryResult queryResult = TShock.DB.QueryReader("SELECT * FROM tsCharacter WHERE Account=@0", new object[]
+                    TShock.DB.Query("UPDATE tsCharacter SET Health = @0, MaxHealth = @1, Mana = @2, MaxMana = @3, Inventory = @4, spawnX = @6, spawnY = @7, hair = @8, hairDye = @9, hairColor = @10, pantsColor = @11, shirtColor = @12, underShirtColor = @13, shoeColor = @14, hideVisuals = @15, skinColor = @16, eyeColor = @17, questsCompleted = @18, skinVariant = @19, extraSlot = @20, usingBiomeTorches = @21, happyFunTorchTime = @22, unlockedBiomeTorches = @23, currentLoadoutIndex = @24, ateArtisanBread = @25, usedAegisCrystal = @26, usedAegisFruit = @27, usedArcaneCrystal = @28, usedGalaxyPearl = @29, usedGummyWorm = @30, usedAmbrosia = @31, unlockedSuperCart = @32, enabledSuperCart = @33 WHERE Account = @5;", new object[]
                     {
-                        accid
-                    }))
-                    {
-                        bool flag3 = queryResult.Read();
-                        if (flag3)
-                        {
-                            flag2 = true;
-                        }
-                    }
-                    bool flag4 = flag2;
-                    if (flag4)
-                    {
-                        TShock.DB.Query("UPDATE tsCharacter SET Health = @0, MaxHealth = @1, Mana = @2, MaxMana = @3, Inventory = @4, spawnX = @6, spawnY = @7, hair = @8, hairDye = @9, hairColor = @10, pantsColor = @11, shirtColor = @12, underShirtColor = @13, shoeColor = @14, hideVisuals = @15, skinColor = @16, eyeColor = @17, questsCompleted = @18, skinVariant = @19, extraSlot = @20, usingBiomeTorches = @21, happyFunTorchTime = @22, unlockedBiomeTorches = @23, currentLoadoutIndex = @24, ateArtisanBread = @25, usedAegisCrystal = @26, usedAegisFruit = @27, usedArcaneCrystal = @28, usedGalaxyPearl = @29, usedGummyWorm = @30, usedAmbrosia = @31, unlockedSuperCart = @32, enabledSuperCart = @33 WHERE Account = @5;", new object[]
-                        {
-                            pd.health,
-                            pd.maxHealth,
-                            pd.mana,
-                            pd.maxMana,
-                            string.Join<NetItem>("~", pd.inventory),
-                            accid,
-                            pd.spawnX,
-                            pd.spawnY,
-                            pd.hair,
-                            pd.hairDye,
-                            TShock.Utils.EncodeColor(pd.hairColor),
-                            TShock.Utils.EncodeColor(pd.pantsColor),
-                            TShock.Utils.EncodeColor(pd.shirtColor),
-                            TShock.Utils.EncodeColor(pd.underShirtColor),
-                            TShock.Utils.EncodeColor(pd.shoeColor),
-                            TShock.Utils.EncodeBoolArray(pd.hideVisuals),
-                            TShock.Utils.EncodeColor(pd.skinColor),
-                            TShock.Utils.EncodeColor(pd.eyeColor),
-                            pd.questsCompleted,
-                            pd.skinVariant,
-                            pd.extraSlot,
-                            pd.usingBiomeTorches,
-                            pd.happyFunTorchTime,
-                            pd.unlockedBiomeTorches,
-                            pd.currentLoadoutIndex,
-                            pd.ateArtisanBread,
-                            pd.usedAegisCrystal,
-                            pd.usedAegisFruit,
-                            pd.usedArcaneCrystal,
-                            pd.usedGalaxyPearl,
-                            pd.usedGummyWorm,
-                            pd.usedAmbrosia,
-                            pd.unlockedSuperCart,
-                            pd.enabledSuperCart
-                        });
-                    }
-                    result = flag2;
+                        pd.health,
+                        pd.maxHealth,
+                        pd.mana,
+                        pd.maxMana,
+                        string.Join<NetItem>("~", pd.inventory),
+                        accid,
+                        pd.spawnX,
+                        pd.spawnY,
+                        pd.hair,
+                        pd.hairDye,
+                        TShock.Utils.EncodeColor(pd.hairColor),
+                        TShock.Utils.EncodeColor(pd.pantsColor),
+                        TShock.Utils.EncodeColor(pd.shirtColor),
+                        TShock.Utils.EncodeColor(pd.underShirtColor),
+                        TShock.Utils.EncodeColor(pd.shoeColor),
+                        TShock.Utils.EncodeBoolArray(pd.hideVisuals),
+                        TShock.Utils.EncodeColor(pd.skinColor),
+                        TShock.Utils.EncodeColor(pd.eyeColor),
+                        pd.questsCompleted,
+                        pd.skinVariant,
+                        pd.extraSlot,
+                        pd.usingBiomeTorches,
+                        pd.happyFunTorchTime,
+                        pd.unlockedBiomeTorches,
+                        pd.currentLoadoutIndex,
+                        pd.ateArtisanBread,
+                        pd.usedAegisCrystal,
+                        pd.usedAegisFruit,
+                        pd.usedArcaneCrystal,
+                        pd.usedGalaxyPearl,
+                        pd.usedGummyWorm,
+                        pd.usedAmbrosia,
+                        pd.unlockedSuperCart,
+                        pd.enabledSuperCart
+                    });
                 }
-                catch (Exception ex)
-                {
-                    TShock.Log.Error(ex.ToString());
-                    result = false;
-                }
+                return true;
             }
-            return result;
+            catch (Exception ex)
+            {
+                TShock.Log.Error("错误：UpdateTshockDBCharac " + ex.ToString());
+                Console.WriteLine("错误：UpdateTshockDBCharac " + ex.ToString());
+                return false;
+            }
         }
 
 
@@ -988,7 +970,7 @@ namespace ZHIPlayerManager
             long gold = coin % 100; //72
             coin /= 100;
             long platinum = coin; //74
-            if(Model == 0)
+            if (Model == 0)
             {
                 return $"{platinum}[i:74] {gold}[i:73] {silver}[i:72] {copper}[i:71]";
             }
@@ -1003,7 +985,7 @@ namespace ZHIPlayerManager
         /// 导出这个用户成存档plr
         /// </summary>
         /// <param name="player"></param>
-        /// <param name="time"></param>
+        /// <param name="time"> 如果你想导出这个玩家的游玩时间就填，单位秒 </param>
         /// <returns></returns>
         public bool ExportPlayer(Player player, long time = 0L)
         {
@@ -1021,12 +1003,22 @@ namespace ZHIPlayerManager
                     text = text.Remove(i, 1);
                 }
             }
+            string worldname = new string(Main.worldName);
+            //移除不合法的字符
+            for (int i = 0; i < worldname.Length; i++)
+            {
+                bool flag = worldname[i] == '\\' || worldname[i] == '/' || worldname[i] == ':' || worldname[i] == '*' || worldname[i] == '?' || worldname[i] == '"' || worldname[i] == '<' || worldname[i] == '>' || worldname[i] == '|';
+                if (flag)
+                {
+                    worldname = worldname.Remove(i, 1);
+                }
+            }
             PlayerFileData playerFileData = new PlayerFileData();
             playerFileData.Metadata = FileMetadata.FromCurrentSettings(FileType.Player);
             playerFileData.Player = player;
             playerFileData._isCloudSave = false;
             FileData fileData = playerFileData;
-            fileData._path = TShock.SavePath + $"/ZhiPlayers/{Main.worldName}/{text}.plr";
+            fileData._path = TShock.SavePath + $"/ZhiPlayers/{worldname}/{text}.plr";
             playerFileData.SetPlayTime(new TimeSpan(time * 10000000L));
             Main.LocalFavoriteData.ClearEntry(playerFileData);
             try
@@ -1038,9 +1030,9 @@ namespace ZHIPlayerManager
                 }
                 else
                 {
-                    if (!Directory.Exists(TShock.SavePath + "/ZhiPlayers/" + Main.worldName))
+                    if (!Directory.Exists(TShock.SavePath + "/ZhiPlayers/" + worldname))
                     {
-                        Directory.CreateDirectory(TShock.SavePath + "/ZhiPlayers/" + Main.worldName);
+                        Directory.CreateDirectory(TShock.SavePath + "/ZhiPlayers/" + worldname);
                     }
                     RijndaelManaged rijndaelManaged = new RijndaelManaged();
                     using (Stream stream = new FileStream(path, FileMode.Create))
@@ -1560,8 +1552,7 @@ namespace ZHIPlayerManager
                     items[i].stack = pd.inventory[i].Stack;
                     items[i].prefix = pd.inventory[i].PrefixId;
                 }
-                bool flag;
-                return Terraria.Utils.CoinsCount(out flag, items.ToArray(), new int[0]);
+                return Terraria.Utils.CoinsCount(out bool flag, items.ToArray(), new int[0]);
             }
             else
             {

@@ -1,9 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using TerrariaApi.Server;
 using TShockAPI;
 using TShockAPI.DB;
@@ -12,6 +9,9 @@ namespace ZHIPlayerManager
 {
     public partial class ZHIPM : TerrariaPlugin
     {
+        /// <summary>
+        /// 备份数据库类
+        /// </summary>
         public class ZplayerDB
         {
             private IDbConnection database;
@@ -19,6 +19,7 @@ namespace ZHIPlayerManager
             private string tableName;
 
             private readonly int MaxSlot = 5;
+
 
             /// <summary>
             /// 构造函数
@@ -86,7 +87,7 @@ namespace ZHIPlayerManager
 
 
             /// <summary>
-            /// 从数据库读取一个玩家的备份存档槽，第slot个
+            /// 从数据库读取一个玩家的备份存档槽，第slot个，此方法已对exist设置过
             /// </summary>
             /// <param name="player">一个没有什么意义的玩家</param>
             /// <param name="acctid">需要的那个玩家的账号ID</param>
@@ -155,41 +156,6 @@ namespace ZHIPlayerManager
                     Console.WriteLine("错误：ReadZPlayerDB " + ex.ToString());
                     return playerData;
                 }
-            }
-
-
-            /// <summary>
-            /// 获取这个用户目前几个备份槽了
-            /// </summary>
-            /// <param name="player">没意义的玩家</param>
-            /// <param name="acctid">需要搜索的该玩家的ID</param>
-            /// <param name="text">返回这些槽的name</param>
-            /// <returns></returns>
-            public int getZPlayerDBMaxSlot(TSPlayer player, int acctid, out List<string> text)
-            {
-                int num = 0;
-                text = new List<string>();
-                try
-                {
-                    using (QueryResult queryResult = database.QueryReader("SELECT * FROM " + tableName + " WHERE Account=@0", new object[]
-                    {
-                        acctid
-                    }))
-                    {
-                        while (queryResult.Read())
-                        {
-                            num++;
-                            text.Add(queryResult.Get<string>("AccAndSlot"));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    TShock.Log.Error("错误：getZPlayerDBMaxSlot " + ex.ToString());
-                    TSPlayer.All.SendErrorMessage("错误：getZPlayerDBMaxSlot " + ex.ToString());
-                    Console.WriteLine("错误：getZPlayerDBMaxSlot " + ex.ToString());
-                }
-                return num;
             }
 
 
@@ -316,6 +282,41 @@ namespace ZHIPlayerManager
                     Console.WriteLine("错误：WriteZPlayerDB 2 " + ex2.ToString());
                     return false;
                 }
+            }
+
+
+            /// <summary>
+            /// 获取这个用户目前几个备份槽了
+            /// </summary>
+            /// <param name="player">没意义的玩家</param>
+            /// <param name="acctid">需要搜索的该玩家的ID</param>
+            /// <param name="text">返回这些槽的name</param>
+            /// <returns></returns>
+            public int getZPlayerDBMaxSlot(TSPlayer player, int acctid, out List<string> text)
+            {
+                int num = 0;
+                text = new List<string>();
+                try
+                {
+                    using (QueryResult queryResult = database.QueryReader("SELECT * FROM " + tableName + " WHERE Account=@0", new object[]
+                    {
+                        acctid
+                    }))
+                    {
+                        while (queryResult.Read())
+                        {
+                            num++;
+                            text.Add(queryResult.Get<string>("AccAndSlot"));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TShock.Log.Error("错误：getZPlayerDBMaxSlot " + ex.ToString());
+                    TSPlayer.All.SendErrorMessage("错误：getZPlayerDBMaxSlot " + ex.ToString());
+                    Console.WriteLine("错误：getZPlayerDBMaxSlot " + ex.ToString());
+                }
+                return num;
             }
 
 
@@ -453,7 +454,8 @@ namespace ZHIPlayerManager
                         Primary = true
                     },
                     new SqlColumn("Name", MySqlDbType.Text),
-                    new SqlColumn("time", MySqlDbType.Int64)
+                    new SqlColumn("time", MySqlDbType.Int64),
+                    new SqlColumn("backuptime", MySqlDbType.Int32)
                 });
                 IQueryBuilder queryBuilder;
                 if (database.GetSqlType() != SqlType.Sqlite)
@@ -491,6 +493,7 @@ namespace ZHIPlayerManager
                             extraData.Account = account;
                             extraData.Name = queryResult.Get<string>("Name");
                             extraData.time = queryResult.Get<long>("time");
+                            extraData.backuptime = queryResult.Get<int>("backuptime");
                         }
                     }
                     return extraData;
@@ -525,6 +528,25 @@ namespace ZHIPlayerManager
 
 
             /// <summary>
+            /// 获取这个玩家的游戏自动备份间隔
+            /// </summary>
+            /// <param name="account"></param>
+            /// <returns></returns>
+            public int getPlayerExtraDBBackuptime(int account)
+            {
+                ExtraData? extraData = ReadExtraDB(account);
+                if (extraData == null)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return extraData.backuptime;
+                }
+            }
+
+
+            /// <summary>
             /// 将这个用户的额外数据写入数据库
             /// </summary>
             /// <param name="account"></param>
@@ -537,11 +559,12 @@ namespace ZHIPlayerManager
                 {
                     try
                     {
-                        database.Query("INSERT INTO " + tableName + " (Account, Name, time) VALUES (@0, @1, @2);", new object[]
+                        database.Query("INSERT INTO " + tableName + " (Account, Name, time, backuptime) VALUES (@0, @1, @2, @3);", new object[]
                         {
                                 ed.Account,
                                 ed.Name,
-                                ed.time
+                                ed.time,
+                                ed.backuptime
                         });
                         return true;
                     }
@@ -556,11 +579,12 @@ namespace ZHIPlayerManager
                 //否则就更新数据
                 try
                 {
-                    database.Query("UPDATE " + tableName + " SET Name = @0, time = @1 WHERE Account = @2;", new object[]
+                    database.Query("UPDATE " + tableName + " SET Name = @0, time = @1, backuptime = @3 WHERE Account = @2;", new object[]
                     {
                             ed.Name,
                             ed.time,
-                            ed.Account
+                            ed.Account,
+                            ed.backuptime
                     });
                     return true;
                 }
@@ -583,7 +607,7 @@ namespace ZHIPlayerManager
             {
                 try
                 {
-                    database.Query("DROP TABLE " + tableName, Array.Empty<object>());
+                    database.Query("DROP TABLE " + tableName);
                     zedb = new ZplayerExtraDB(TShock.DB);
                     return true;
                 }
@@ -639,7 +663,8 @@ namespace ZHIPlayerManager
                             {
                                 Account = queryResult.Get<int>("Account"),
                                 Name = queryResult.Get<string>("Name"),
-                                time = queryResult.Get<long>("time")
+                                time = queryResult.Get<long>("time"),
+                                backuptime = queryResult.Get<int>("backuptime")
                             });
                         }
                     }
@@ -664,13 +689,20 @@ namespace ZHIPlayerManager
             public int Account;
             public string Name;
             public long time;
+            public int backuptime;
             public ExtraData()
-            { }
-            public ExtraData(int Account, string Name, long time)
+            {
+                Account = -1;
+                Name = string.Empty;
+                time = 0;
+                backuptime = 0;
+            }
+            public ExtraData(int Account, string Name, long time, int backuptime)
             {
                 this.Account = Account;
                 this.Name = Name;
                 this.time = time;
+                this.backuptime = backuptime;
             }
         }
     }

@@ -14,7 +14,7 @@ namespace ZHIPlayerManager
 
         public override string Name => "ZHIPlayerManager";
 
-        public override Version Version => new Version(1, 0, 0, 1);
+        public override Version Version => new Version(1, 0, 0, 0);
 
         //人物备份数据库
         public ZplayerDB ZPDataBase;
@@ -24,11 +24,14 @@ namespace ZHIPlayerManager
         public List<ExtraData> edPlayers;
         //广播颜色
         public Color broadcastColor = new Color(0, 255, 213);
+        //计时器，60 Timer = 1 秒
+        public static long Timer;
 
         public ZHIPM(Main game) : base(game) { }
 
         public override void Initialize()
         {
+            Timer = 0L;
             ZPDataBase = new ZplayerDB(TShock.DB);
             ZPExtraDB = new ZplayerExtraDB(TShock.DB);
             edPlayers = new List<ExtraData>();
@@ -49,6 +52,10 @@ namespace ZHIPlayerManager
             Commands.ChatCommands.Add(new Command("zhipm.save", MySSCSave, "zsave")
             {
                 HelpText = "输入 /zsave  来备份自己的人物存档"
+            });
+            Commands.ChatCommands.Add(new Command("zhipm.save", MySSCSaveAuto, "zsaveauto")
+            {
+                HelpText = "输入 /zsaveauto [minute]  来每隔 minute 分钟自动备份自己的人物存档，当 minute 为 0 时关闭该功能"
             });
             Commands.ChatCommands.Add(new Command("zhipm.save", ViewMySSCSave, "zvisa")
             {
