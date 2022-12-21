@@ -576,7 +576,7 @@ namespace ZHIPlayerManager
                         "输入 /zmodify [name] worm [0或1]  来关闭或开启粘性蠕虫增益\n" +
                         "输入 /zmodify [name] ambrosia [0或1]  来关闭或开启珍馐增益\n" +
                         "输入 /zmodify [name] cart [0或1]  来关闭或开启超级矿车增益\n" +
-                        "输入 /zmodify [name] enhance [0或1]  来关闭或开启所有玩家增益" + temp
+                        "输入 /zmodify [name] all [0或1]  来关闭或开启所有玩家增益" + temp
                         , TextColor());
                 }
                 else
@@ -712,7 +712,7 @@ namespace ZHIPlayerManager
                         players[0].SendData(PacketTypes.PlayerInfo, "", players[0].Index, 0f, 0f, 0f, 0);
                         players[0].SendMessage("您的超级矿车增益开启状态：" + players[0].TPlayer.unlockedSuperCart, new Color(0, 255, 0));
                     }
-                    else if (args.Parameters[1].Equals("enhance", StringComparison.OrdinalIgnoreCase))
+                    else if (args.Parameters[1].Equals("all", StringComparison.OrdinalIgnoreCase))
                     {
                         if (num == 1)
                         {
@@ -908,7 +908,7 @@ namespace ZHIPlayerManager
                                     user.ID
                             });
                         }
-                        else if (args.Parameters[1].Equals("enhance", StringComparison.OrdinalIgnoreCase))
+                        else if (args.Parameters[1].Equals("all", StringComparison.OrdinalIgnoreCase))
                         {
                             TShock.DB.Query("UPDATE tsCharacter SET unlockedBiomeTorches = @1, extraSlot = @2, ateArtisanBread = @3, usedAegisCrystal = @4, usedAegisFruit = @5, usedArcaneCrystal = @6, usedGalaxyPearl = @7, usedGummyWorm = @8, usedAmbrosia = @9, unlockedSuperCart = @10 WHERE Account = @0;", new object[]
                             {

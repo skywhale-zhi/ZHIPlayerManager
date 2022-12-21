@@ -141,6 +141,7 @@ namespace ZHIPlayerManager
             {
                 HelpText = "输入 /zhide kill  来取消 kill + 1 的显示，再次使用启用显示\n输入 /zhide point  来取消 + 1 $ 的显示，再次使用启用显示"
             });
+
             Commands.ChatCommands.Add(new Command("zhipm.clear", Clear, "zclear")
             {
                 HelpText = "输入 /zclear useless  来清理世界的掉落物品，非城镇或BossNPC，和无用射弹\n输入 /zclear buff [name]  来清理该玩家的所有Buff\n输入 /zclear buff all  来清理所有玩家所有Buff"
@@ -194,49 +195,9 @@ namespace ZHIPlayerManager
                 HelpText = "输入 /zban add [name] [reason]  来封禁无论是否在线的玩家，reason 可不填"
             });
 
-
-            Commands.ChatCommands.Add(new Command("zhipm.test", ZTest, "tz")
-            {
-                HelpText = "输入 /tz  来进行测试"
-            });
             #endregion
         }
 
-
-        private void ZTest(CommandArgs args)
-        {
-            args.Player.SendInfoMessage("strikenpc.count:" + strikeNPC.Count);
-            if (strikeNPC.Count > 0)
-            {
-                foreach (var v in strikeNPC)
-                {
-                    string playername = "";
-                    foreach (var vv in v.playerAndDamage)
-                    {
-                        playername += vv.Key + ",";
-                    }
-                    args.Player.SendMessage($"id:{v.id}, name:{v.name}, index:{v.index}, players:{playername}\n" +
-                        $"main.id:{Main.npc[v.index].netID}, main.name:{Main.npc[v.index].FullName}, main.active:{Main.npc[v.index].active}", broadcastColor);
-                }
-            }
-            args.Player.SendInfoMessage($"edplayer.count:{edPlayers.Count}");
-            if (edPlayers.Count > 0)
-            {
-                foreach (var v in edPlayers)
-                {
-                    args.Player.SendMessage($"name:{v.Name}, acc:{v.Account}, time:{v.time}", broadcastColor);
-                }
-            }
-            args.Player.SendInfoMessage($"Freeze.count:{frePlayers.Count}");
-            if(frePlayers.Count > 0)
-            {
-                foreach(var v in frePlayers)
-                {
-                    args.Player.SendMessage($"name:{v.name}, acc:{v.account}, uuid:{v.uuid}, ips:{v.IPs}", broadcastColor);
-                }
-            }
-        }
-        
 
 
         protected override void Dispose(bool disposing)
